@@ -10,6 +10,7 @@ import shutil
 from pathlib import Path
 
 from .config import Config
+from .editorial import CoverSelection, YearReview, build_year_review, select_cover
 from .model import Activity, Highlight, by_year, select_editorial_highlights
 from .route import route_heatmap_svg, route_svg
 from .theme import FEATURE_CSS, THEME_CSS
@@ -55,10 +56,22 @@ def _short(text: str, limit: int) -> str:
 
 # ---- page renderers -------------------------------------------------------
 
-def _cover(year: str, subtitle: str) -> str:
-    return (f'<article class="book-page art-page cloth recto" data-density="hard" '
-            f'aria-label="Front cover"><h2 class="cover-title">{year}</h2>'
-            f'<p class="cover-subtitle">{_esc(subtitle)}</p></article>')
+def _cover(year: str, review: YearReview, selection: CoverSelection | None, route: str) -> str:
+    metrics = (f'<div class="cover-index"><span>{review.rides} RIDES</span>'
+               f'<span>{review.distance_km:,.0f} KM</span>'
+               f'<span>{review.active_months} ACTIVE MONTHS</span></div>')
+    if selection:
+        title = _esc(_short(selection.activity.name, 42))
+        return (f'<article class="book-page art-page cloth recto poster-cover" data-density="hard" '
+                f'data-cover-mode="photo" aria-label="Front cover">'
+                f'<div class="cover-photo"><img src="{selection.photo.web_path}" alt="" '
+                f'style="object-position:{selection.object_position}"></div>'
+                f'<div class="cover-year">{year}</div><p class="cover-kicker">YEAR IN MOTION</p>'
+                f'<h2 class="cover-story">{title}</h2>{metrics}</article>')
+    return (f'<article class="book-page art-page cloth recto poster-cover" data-density="hard" '
+            f'data-cover-mode="route" aria-label="Front cover"><div class="cover-route">{route}</div>'
+            f'<div class="cover-year">{year}</div><p class="cover-kicker">ROUTE ARCHIVE</p>'
+            f'<h2 class="cover-story">年度骑行纪年</h2>{metrics}</article>')
 
 
 def _back(year: str) -> str:
@@ -81,6 +94,39 @@ def _stats_page(stats: dict) -> str:
     lines = "".join(f"<p><b>{v}</b> {k}</p>" for k, v in stats["lines"])
     return (f'<article class="book-page art-page paper verso" aria-label="Year in numbers">'
             f'<div class="colophon year-stats"><p>年度数字</p>{lines}</div></article>')
+
+
+def _year_declaration_page(year: str, review: YearReview) -> str:
+    return (
+        f'<article class="book-page art-page review-page year-declaration recto" '
+        f'data-year-review="declaration" aria-label="{year} 年度宣言">'
+        f'<p class="review-eyebrow">{year} / YOUR YEAR IN MOTION</p>'
+        f'<h2 class="review-distance">{review.distance_km:,.0f}</h2><p class="review-unit">KILOMETRES RIDDEN</p>'
+        '<p class="review-statement">这一年，你用两个车轮<br>重新画了一遍城市与山野。</p>'
+        '<div class="review-core">'
+        f'<span><b>{review.rides}</b>次骑行</span><span><b>{review.moving_hours}h</b>移动时间</span>'
+        f'<span><b>{review.elevation_m:,.0f}m</b>累计爬升</span></div></article>'
+    )
+
+
+def _year_rhythm_page(review: YearReview, route: str) -> str:
+    peak = max(review.peak_month.distance_km, 1)
+    bars = "".join(
+        f'<span class="month-bar{" is-peak" if month.month == review.peak_month.month else ""}" '
+        f'style="--month-height:{max(4, month.distance_km / peak * 100):.1f}%">'
+        f'<i></i><b>{month.month}</b></span>' for month in review.months
+    )
+    return (
+        '<article class="book-page art-page review-page year-rhythm verso" '
+        'data-year-review="rhythm" aria-label="年度节奏与纪录">'
+        f'<div class="rhythm-route">{route}</div><p class="review-eyebrow">THE RHYTHM OF YOUR YEAR</p>'
+        '<h2 class="rhythm-title">越骑越远<br>也越骑越高</h2>'
+        f'<div class="month-bars">{bars}</div><div class="rhythm-facts">'
+        f'<span><b>{review.peak_month.distance_km:,.0f} km</b>最活跃月份 · {review.peak_month.month}月</span>'
+        f'<span><b>{review.longest_ride.distance_km:,.0f} km</b>最长单骑<small>{_esc(_short(review.longest_ride.name, 30))}</small></span>'
+        f'<span><b>{review.kudos:,}</b>收到 Kudos</span><span><b>{review.pr_count:,}</b>赛段 PR</span>'
+        '</div></article>'
+    )
 
 
 def _heatmap_page(year: str, activities: list[Activity]) -> str:
@@ -311,17 +357,27 @@ def _chronological_activity_blocks(
 
 
 def _frame_pages(
-    year: str, stats: dict, activity_pages: list[str], activities: list[Activity] | None = None
+    year: str, stats: dict, activity_pages: list[str], activities: list[Activity] | None = None,
+    selection: CoverSelection | None = None,
 ) -> list[str]:
     """Wrap meaningful content with covers without inserting blank leaves."""
+    year_activities = activities or []
+    if year_activities:
+        review = build_year_review(year_activities)
+    else:
+        placeholder = Activity(id="review", name="Ride", date=f"{year}-01-01T00:00:00Z", year=year,
+                               distance_km=stats.get("km", 0), elev_m=stats.get("elev", 0))
+        review = build_year_review([placeholder])
+    route = route_heatmap_svg([activity.polyline for activity in year_activities if activity.polyline])
     pages = [
-        _cover(year, "A Year of Cycling · Strava"),
-        _title_page(year, stats),
+        _cover(year, review, selection, route),
+        _year_declaration_page(year, review),
+        _year_rhythm_page(review, route),
     ]
-    heatmap = _heatmap_page(year, activities or [])
+    heatmap = _heatmap_page(year, year_activities)
     if heatmap:
         pages.append(heatmap)
-    pages.extend([_stats_page(stats), *activity_pages, _colophon(year), _back(year)])
+    pages.extend([*activity_pages, _colophon(year), _back(year)])
     return pages
 
 
@@ -365,7 +421,7 @@ def build_year(cfg: Config, year: str, activities: list[Activity], hydrate,
             activity_pages.append(_activity_photo_page(side[len(activity_pages) % 2], highlight, ph, str(used + 1)))
             used += 1
 
-    pages = _frame_pages(year, stats, activity_pages, ya)
+    pages = _frame_pages(year, stats, activity_pages, ya, select_cover(candidates))
     (out / "index.html").write_text(_document(year, "\n        ".join(pages)), encoding="utf-8")
     print(f"built {out}  pages={len(pages)} photos={used}")
     return out

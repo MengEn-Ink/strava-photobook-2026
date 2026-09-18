@@ -16,6 +16,9 @@ def write_book(root: Path, photo_count: int, *, extras: str = "", heatmap: bool 
         tags.append(f'<img src="assets/photos/{name}">')
     (book / "index.html").write_text(
         '<html data-strava-photobook="1"><nav id="month-timeline"></nav>'
+        + '<article data-cover-mode="photo"></article>'
+        + '<article data-year-review="declaration"></article>'
+        + '<article data-year-review="rhythm"></article>'
         + ('<article data-annual-heatmap="1"></article>' if heatmap else '')
         + "".join(tags) + extras + "</html>",
         encoding="utf-8",
@@ -58,6 +61,21 @@ class ReleaseValidationTests(unittest.TestCase):
             candidate = write_book(Path(raw), 1, heatmap=False)
             with self.assertRaisesRegex(ValidationError, "missing annual heatmap"):
                 validate_release(candidate, require_heatmap=True)
+
+    def test_rejects_missing_cover_or_annual_review_pages(self):
+        with tempfile.TemporaryDirectory() as raw:
+            candidate = write_book(Path(raw), 1)
+            index = candidate / "index.html"
+            html = index.read_text(encoding="utf-8")
+            index.write_text(
+                html.replace('data-cover-mode="photo"', 'data-old-cover="1"')
+                    .replace('data-year-review="rhythm"', 'data-old-review="1"'),
+                encoding="utf-8",
+            )
+            with self.assertRaises(ValidationError) as caught:
+                validate_release(candidate)
+            self.assertIn("missing editorial cover", str(caught.exception))
+            self.assertIn("missing annual review rhythm", str(caught.exception))
 
 
 if __name__ == "__main__":

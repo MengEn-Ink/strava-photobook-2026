@@ -2,8 +2,10 @@ import unittest
 
 from strava_photobook import book
 from strava_photobook.book import (
-    _activity_photo_page, _document, _feature_page, _frame_pages, _heatmap_page,
+    _activity_photo_page, _cover, _document, _feature_page, _frame_pages, _heatmap_page,
+    _year_declaration_page, _year_rhythm_page,
 )
+from strava_photobook.editorial import CoverSelection, build_year_review
 from strava_photobook.model import Activity, Highlight, Photo
 
 
@@ -60,6 +62,35 @@ class BookRenderingTests(unittest.TestCase):
         self.assertNotIn("endpaper", rendered)
         self.assertEqual(rendered.count('data-density="hard"'), 2)
 
+    def test_cover_renders_photo_poster_and_route_fallback(self):
+        review = build_year_review([self.activity])
+        selection = CoverSelection(Photo("assets/photos/42.jpg", landscape=True), self.activity)
+
+        photo_cover = _cover("2026", review, selection, "<svg></svg>")
+        fallback = _cover("2026", review, None, "<svg class=\"route-heatmap\"></svg>")
+
+        self.assertIn('data-cover-mode="photo"', photo_cover)
+        self.assertIn('src="assets/photos/42.jpg"', photo_cover)
+        self.assertIn("161 KM", photo_cover)
+        self.assertIn('data-cover-mode="route"', fallback)
+        self.assertNotIn("<img", fallback)
+        self.assertIn("route-heatmap", fallback)
+
+    def test_annual_review_is_exactly_two_pages_with_real_month_bars(self):
+        january = Activity(id="jan", name="January", date="2026-01-02T08:00:00Z", year="2026", distance_km=20)
+        august = Activity(id="aug", name="A very long longest ride title " * 10, date="2026-08-02T08:00:00Z", year="2026", distance_km=200)
+        review = build_year_review([january, august])
+
+        declaration = _year_declaration_page("2026", review)
+        rhythm = _year_rhythm_page(review, "<svg></svg>")
+
+        self.assertIn('data-year-review="declaration"', declaration)
+        self.assertIn('data-year-review="rhythm"', rhythm)
+        self.assertEqual(rhythm.count('<span class="month-bar'), 2)
+        self.assertEqual(rhythm.count("is-peak"), 1)
+        self.assertIn("8月", rhythm)
+        self.assertIn("…", rhythm)
+
     def test_heatmap_page_aggregates_routes_and_compact_year_metrics(self):
         demo = "_p~iF~ps|U_ulLnnqC_mqNvxq`@"
         rides = [
@@ -85,8 +116,8 @@ class BookRenderingTests(unittest.TestCase):
 
         ride.polyline = "_p~iF~ps|U_ulLnnqC_mqNvxq`@"
         pages = _frame_pages("2026", stats, ["activity"], [ride])
-        self.assertIn('data-annual-heatmap="1"', pages[2])
-        self.assertIn("Year in numbers", pages[3])
+        self.assertIn('data-year-review="rhythm"', pages[2])
+        self.assertIn('data-annual-heatmap="1"', pages[3])
 
     def test_long_feature_copy_is_bounded_before_render(self):
         rendered = _feature_page("recto", self.highlight)

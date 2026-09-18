@@ -46,6 +46,16 @@ class LayoutContractTests(unittest.TestCase):
         self.assertIn("var(--theme-primary)", css)
         self.assertIn("var(--theme-accent)", css)
 
+    def test_poster_cover_and_year_review_have_safe_theme_aware_layouts(self):
+        css = THEME_CSS.replace(" ", "")
+        for selector in (
+            ".poster-cover{", ".cover-photo{", ".cover-photo::after{",
+            ".year-declaration{", ".year-rhythm{", ".month-bars{", ".rhythm-facts{",
+        ):
+            self.assertIn(selector, css)
+        for token in ("height:72%", "overflow:hidden", "var(--theme-primary)", "var(--theme-accent)"):
+            self.assertIn(token, css)
+
 
 if __name__ == "__main__":
     unittest.main()

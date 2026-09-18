@@ -28,6 +28,12 @@ def validate_release(
         errors.append("missing photobook marker")
     if 'id="month-timeline"' not in html:
         errors.append("missing month timeline")
+    if not re.search(r'data-cover-mode="(?:photo|route)"', html):
+        errors.append("missing editorial cover")
+    if 'data-year-review="declaration"' not in html:
+        errors.append("missing annual review declaration")
+    if 'data-year-review="rhythm"' not in html:
+        errors.append("missing annual review rhythm")
     if require_heatmap and 'data-annual-heatmap="1"' not in html:
         errors.append("missing annual heatmap")
     if "endpaper" in html:
