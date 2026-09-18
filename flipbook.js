@@ -1,6 +1,6 @@
 import { THEMES, applyTheme, storedTheme } from "./theme-catalog.js";
 import { activeMonthAtPage, firstPageByMonth } from "./month-timeline.js";
-import { isInteractiveTarget, tapDirection } from "./click-navigation.js";
+import { isInteractiveTarget, tapAction } from "./click-navigation.js";
 
 const bookElement = document.querySelector("#book");
 const pages = bookElement.querySelectorAll(".book-page");
@@ -42,7 +42,10 @@ function setThemePopover(open, returnFocus = false) {
 if (themeToggle && themePopover) {
   chooseTheme(storedTheme());
   themeToggle.addEventListener("click", () => setThemePopover(themePopover.hidden));
-  themeOptions.forEach((option) => option.addEventListener("click", () => chooseTheme(option.dataset.themeId)));
+  themeOptions.forEach((option) => option.addEventListener("click", () => {
+    chooseTheme(option.dataset.themeId);
+    setThemePopover(false, true);
+  }));
   document.addEventListener("click", (event) => {
     if (!themePopover.hidden && !themePicker.contains(event.target)) setThemePopover(false);
   });
@@ -120,7 +123,7 @@ pageFlip.on("changeState", (event) => {
 function updateOrientation(orientation) {
   currentOrientation = orientation;
   bookElement.dataset.layout = orientation;
-  orientationStatus.textContent = orientation === "portrait" ? "Single page" : "Open spread";
+  if (orientationStatus) orientationStatus.textContent = orientation === "portrait" ? "Single page" : "Open spread";
   updateMonthTimeline();
 }
 
@@ -153,13 +156,20 @@ bookElement.addEventListener("pointerdown", (event) => {
   pointerStart = { x: event.clientX, y: event.clientY };
 }, { capture: true });
 bookElement.addEventListener("pointerup", (event) => {
-  const direction = tapDirection(pointerStart, { x: event.clientX, y: event.clientY }, bookElement.getBoundingClientRect());
+  const action = tapAction({
+    popoverOpen: Boolean(themePopover && !themePopover.hidden),
+    start: pointerStart,
+    end: { x: event.clientX, y: event.clientY },
+    bounds: bookElement.getBoundingClientRect(),
+    interactive: isInteractiveTarget(event.target),
+  });
   pointerStart = null;
-  if (!direction || isTurning || isInteractiveTarget(event.target)) return;
+  if (!action || isTurning) return;
   event.preventDefault();
   event.stopPropagation();
-  if (direction === "previous") pageFlip.flipPrev("bottom");
-  if (direction === "next") pageFlip.flipNext("bottom");
+  if (action === "close-popover") return setThemePopover(false);
+  if (action === "previous") pageFlip.flipPrev("bottom");
+  if (action === "next") pageFlip.flipNext("bottom");
 }, { capture: true });
 
 window.addEventListener("keydown", (event) => {

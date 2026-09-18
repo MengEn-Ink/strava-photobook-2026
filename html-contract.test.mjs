@@ -57,13 +57,19 @@ test("theme picker interaction is persistent and keyboard accessible", () => {
   assert.match(script, /Escape/);
   assert.match(script, /document\.addEventListener\("click"/);
   assert.match(script, /themeToggle\.focus/);
-  assert.match(script, /tapDirection/);
+  assert.match(script, /tapAction/);
   assert.match(script, /isInteractiveTarget/);
   assert.match(script, /disableFlipByClick:\s*true/);
   assert.match(script, /pointerup/);
   assert.match(script, /capture:\s*true/);
   assert.match(script, /flippingTime:\s*460/);
   assert.match(script, /drawShadow:\s*false/);
+  assert.match(script, /setThemePopover\(false/);
+  assert.match(script, /close-popover/);
+  assert.match(script, /if \(orientationStatus\) orientationStatus\.textContent/);
+  assert.doesNotMatch(script, /orientationStatus\?\.textContent/);
+  assert.doesNotMatch(index, /class="book-header"/);
+  assert.match(index, /class="book-theme-overlay"/);
 });
 
 test("month timeline is accessible and photo folios stay outside artwork", () => {
