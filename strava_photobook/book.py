@@ -15,6 +15,27 @@ from .route import route_svg
 from .theme import FEATURE_CSS, THEME_CSS
 
 PAGE_W, PAGE_H = 512, 640
+THEME_OPTIONS = [
+    ("editorial", "黑白橙（默认）", "#0A0A0A", "#FF5A36"),
+    ("klein-neon", "克莱因蓝 + 荧光绿", "#022A99", "#B7F800"),
+    ("lapis-magenta", "青金石 + 洋红", "#01008A", "#FF0086"),
+    ("deep-green-lava", "深灰绿 + 熔岩", "#003D37", "#EB4743"),
+    ("navy-hermes", "藏蓝色 + 爱马仕橙", "#000035", "#FC8416"),
+    ("mars-rose", "马尔斯绿 + 玫瑰粉", "#01847F", "#F9D2E4"),
+    ("sea-lemon", "海蓝 + 柠檬黄", "#0084D6", "#FFFF00"),
+    ("klein-pine", "克莱因蓝 + 松花黄", "#022A99", "#FFE76F"),
+    ("navy-crimson", "藏蓝色 + 绯红", "#000035", "#E41726"),
+    ("marine-sage", "海军蓝 + 鼠尾草绿", "#29436E", "#A1CD6A"),
+    ("smoke-rice", "烟雾蓝 + 稻香黄", "#2F4058", "#D89F3E"),
+    ("burgundy-stone", "绛红 + 石绿", "#950F16", "#56C4C3"),
+    ("china-red-white", "中国红 + 鱼肚白", "#D7000F", "#F1F2E5"),
+    ("vandyke-khaki", "凡戴克棕 + 浅卡其", "#492D22", "#D8C7B5"),
+    ("deepblue-mist", "深灰蓝 + 雾蓝", "#28517F", "#C7E1FA"),
+    ("royal-mint", "宝蓝色 + 薄荷绿", "#012696", "#A4E2C6"),
+    ("dai-lotus", "黛蓝 + 藕粉", "#425066", "#E4C6D0"),
+    ("indigo-chixiang", "靛蓝 + 赤香", "#0C567D", "#EDB79C"),
+    ("hidden-green-spring", "幽绿 + 春辰", "#56765E", "#CBDA99"),
+]
 
 
 def _esc(t: str) -> str:
@@ -127,6 +148,34 @@ def _colophon(year: str) -> str:
             f'照片为原图缩放，未改动源文件。</p></div></article>')
 
 
+def _theme_picker() -> str:
+    options = []
+    for index, (theme_id, name, primary, accent) in enumerate(THEME_OPTIONS):
+        pressed = "true" if index == 0 else "false"
+        options.append(
+            f'<button class="theme-option" type="button" data-theme-id="{theme_id}" '
+            f'aria-pressed="{pressed}" style="--swatch-primary:{primary};--swatch-accent:{accent}">'
+            f'<span class="theme-swatch" aria-hidden="true"></span><span>{name}</span>'
+            f'<span class="theme-check" aria-hidden="true">✓</span></button>'
+        )
+    return (
+        '<div class="theme-picker">'
+        '<button id="theme-toggle" class="theme-toggle" type="button" aria-expanded="false" '
+        'aria-controls="theme-popover"><span class="current-swatch" aria-hidden="true"></span>'
+        '<span>主题</span></button>'
+        '<div id="theme-popover" class="theme-popover" role="dialog" aria-label="选择画册主题" hidden>'
+        '<div class="theme-popover-head"><strong>画册主题</strong><span>19 种</span></div>'
+        '<div class="theme-options">' + "".join(options) + '</div></div></div>'
+    )
+
+
+def _theme_restore_script() -> str:
+    ids = ",".join(f'"{item[0]}"' for item in THEME_OPTIONS)
+    return ("<script>(function(){try{var k='strava-photobook.theme',v=localStorage.getItem(k),"
+            f"a=[{ids}];if(a.indexOf(v)>-1)document.documentElement.dataset.theme=v;"
+            "}catch(e){}})();</script>")
+
+
 def _document(year: str, body: str) -> str:
     return f"""<!doctype html>
 <html lang="zh-CN" data-strava-photobook="1">
@@ -134,13 +183,15 @@ def _document(year: str, body: str) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Strava Photobook {year}</title>
+  {_theme_restore_script()}
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="theme.css">
 </head>
 <body>
 <main class="room">
   <header class="book-header">
-    <span>Strava · Cycling</span><h1>Strava Photobook {year}</h1><span id="orientation">Open spread</span>
+    <span>Strava · Cycling</span><h1>Strava Photobook {year}</h1>
+    <div class="header-tools"><span id="orientation">Open spread</span>{_theme_picker()}</div>
   </header>
   <section class="stage" aria-label="Interactive photo book">
     <div class="book-rig">
@@ -156,7 +207,8 @@ def _document(year: str, body: str) -> str:
   </footer>
 </main>
 <script src="vendor/page-flip.browser.js"></script>
-<script src="flipbook.js"></script>
+<script type="module" src="theme-catalog.js"></script>
+<script type="module" src="flipbook.js"></script>
 </body>
 </html>
 """

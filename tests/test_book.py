@@ -1,6 +1,6 @@
 import unittest
 
-from strava_photobook.book import _activity_photo_page, _feature_page
+from strava_photobook.book import _activity_photo_page, _document, _feature_page
 from strava_photobook.model import Activity, Highlight, Photo
 
 
@@ -25,6 +25,16 @@ class BookRenderingTests(unittest.TestCase):
         rendered = _feature_page("recto", self.highlight)
         self.assertLess(len(rendered), 3000)
         self.assertIn("…", rendered)
+
+    def test_document_renders_accessible_theme_picker_and_scripts(self):
+        rendered = _document("2026", "<article></article>")
+        self.assertIn('id="theme-toggle"', rendered)
+        self.assertIn('aria-expanded="false"', rendered)
+        self.assertIn('id="theme-popover"', rendered)
+        self.assertEqual(rendered.count('data-theme-id="'), 19)
+        self.assertIn('aria-pressed="true"', rendered)
+        self.assertIn('strava-photobook.theme', rendered)
+        self.assertLess(rendered.index('theme-catalog.js'), rendered.index('flipbook.js'))
 
 
 if __name__ == "__main__":
