@@ -31,6 +31,8 @@ class BookRenderingTests(unittest.TestCase):
         self.assertIn('data-layout="portrait-full"', rendered)
         self.assertIn('data-overlay="forbid"', rendered)
         self.assertNotIn("<figcaption", rendered)
+        self.assertIn('loading="lazy"', rendered)
+        self.assertIn('decoding="async"', rendered)
 
     def test_landscape_and_portrait_photos_share_the_same_frame(self):
         portrait = _activity_photo_page("recto", self.highlight, Photo("portrait.jpg"), "1")

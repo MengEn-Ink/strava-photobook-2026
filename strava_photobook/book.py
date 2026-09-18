@@ -161,10 +161,11 @@ def _activity_photo_page(side: str, highlight: Highlight, ph, folio: str) -> str
     if ph.landscape:
         figure = (f'<figure class="landscape-split" data-layout="landscape-split" '
                   f'data-image-zone="0,0,100,66" data-copy-zone="0,66,100,34">'
-                  f'<img src="{ph.web_path}" alt="{_esc(ph.caption) or "ride photo"}">{cap}</figure>')
+                  f'<img src="{ph.web_path}" alt="{_esc(ph.caption) or "ride photo"}" '
+                  f'loading="lazy" decoding="async">{cap}</figure>')
     else:
         figure = (f'<figure class="portrait-full" data-layout="portrait-full" '
-                  f'data-overlay="forbid"><img src="{ph.web_path}" '
+                  f'data-overlay="forbid"><img src="{ph.web_path}" loading="lazy" decoding="async" '
                   f'alt="{_esc(ph.caption) or _esc(_short(a.name, 40))}"></figure>')
     return (f'<article class="book-page art-page bleed {side}" data-activity-id="{_esc(a.id)}" '
             f'data-month="{month}" '

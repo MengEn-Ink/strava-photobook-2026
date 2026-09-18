@@ -1,6 +1,6 @@
 import { THEMES, applyTheme, storedTheme } from "./theme-catalog.js";
 import { activeMonthAtPage, firstPageByMonth } from "./month-timeline.js";
-import { clickDirection, isInteractiveTarget } from "./click-navigation.js";
+import { isInteractiveTarget, tapDirection } from "./click-navigation.js";
 
 const bookElement = document.querySelector("#book");
 const pages = bookElement.querySelectorAll(".book-page");
@@ -62,8 +62,8 @@ const pageFlip = new St.PageFlip(bookElement, {
   maxWidth: Math.max(1, Math.round(pageWidth * 1.04)),
   minHeight: Math.max(1, Math.round(pageHeight * 0.56)),
   maxHeight: Math.max(1, Math.round(pageHeight * 1.04)),
-  drawShadow: true,
-  flippingTime: 760,
+  drawShadow: false,
+  flippingTime: 460,
   usePortrait: true,
   startZIndex: 10,
   autoSize: true,
@@ -151,15 +151,16 @@ monthButtons.forEach((button) => button.addEventListener("click", () => {
 let pointerStart = null;
 bookElement.addEventListener("pointerdown", (event) => {
   pointerStart = { x: event.clientX, y: event.clientY };
-});
-bookElement.addEventListener("click", (event) => {
-  const moved = pointerStart && Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y) > 8;
+}, { capture: true });
+bookElement.addEventListener("pointerup", (event) => {
+  const direction = tapDirection(pointerStart, { x: event.clientX, y: event.clientY }, bookElement.getBoundingClientRect());
   pointerStart = null;
-  if (moved || isTurning || isInteractiveTarget(event.target)) return;
-  const direction = clickDirection(event.clientX, bookElement.getBoundingClientRect());
+  if (!direction || isTurning || isInteractiveTarget(event.target)) return;
+  event.preventDefault();
+  event.stopPropagation();
   if (direction === "previous") pageFlip.flipPrev("bottom");
   if (direction === "next") pageFlip.flipNext("bottom");
-});
+}, { capture: true });
 
 window.addEventListener("keydown", (event) => {
   if (event.altKey || event.ctrlKey || event.metaKey || isTurning) return;

@@ -6,3 +6,8 @@ export function clickDirection(clientX, bounds) {
 export function isInteractiveTarget(target) {
   return Boolean(target?.closest?.("a,button,input,select,textarea,[role='button'],[data-no-page-click]"));
 }
+
+export function tapDirection(start, end, bounds, threshold = 12) {
+  if (!start || !end || Math.hypot(end.x - start.x, end.y - start.y) > threshold) return null;
+  return clickDirection(end.x, bounds);
+}
