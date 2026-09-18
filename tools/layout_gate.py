@@ -83,7 +83,8 @@ def check(css: str) -> list[str]:
 
     compact = css.replace(" ", "")
     for required in ("overflow:hidden", "-webkit-line-clamp:3", "-webkit-line-clamp:5",
-                     ".photo-frameimg{", "height:72%", "height:28%",
+                     ".portrait-fullimg{", "height:100%", ".landscape-splitimg{",
+                     "height:66%", "height:34%",
                      ".year-stats{", "max-height:76%"):
         if required not in compact:
             errors.append(f"缺少防溢出规则：{required}")

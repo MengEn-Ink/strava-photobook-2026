@@ -20,6 +20,7 @@ class NightlyWorkflowTests(unittest.TestCase):
             "if: always()",
             "tools/validate_release.py",
             "--require-heatmap",
+            "tools/photo_layout_gate.py",
             "FETCH_OK=false",
             "env.FETCH_OK == 'true'",
             "continue-on-error: true",

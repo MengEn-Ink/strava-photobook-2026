@@ -12,12 +12,15 @@ class LayoutContractTests(unittest.TestCase):
         self.assertIn("overflow:hidden", css)
         self.assertIn("-webkit-line-clamp", css)
 
-    def test_landscape_photos_share_a_fixed_image_band(self):
+    def test_photo_orientations_have_distinct_safe_layouts(self):
         css = FEATURE_CSS.replace(" ", "")
-        self.assertIn(".art-page.photo-frameimg{", css)
-        for token in ("width:100%", "height:72%", "top:0", "object-fit:cover", "object-position:center"):
-            self.assertIn(token, css)
-        self.assertIn("height:28%", css)
+        self.assertIn(".art-page.portrait-fullimg{", css)
+        self.assertIn("height:100%", css)
+        self.assertIn("object-fit:cover", css)
+        self.assertIn(".art-page.landscape-splitimg{", css)
+        self.assertIn("height:66%", css)
+        self.assertIn("object-fit:contain", css)
+        self.assertIn("height:34%", css)
 
     def test_year_statistics_have_a_bounded_compact_layout(self):
         css = (FEATURE_CSS + THEME_CSS).replace(" ", "")
@@ -50,11 +53,11 @@ class LayoutContractTests(unittest.TestCase):
     def test_poster_cover_and_year_review_have_safe_theme_aware_layouts(self):
         css = THEME_CSS.replace(" ", "")
         for selector in (
-            ".poster-cover{", ".cover-photo{", ".cover-photo::after{",
+            ".poster-cover{", ".cover-photo{", ".cover-copy{",
             ".year-declaration{", ".year-rhythm{", ".month-bars{", ".rhythm-facts{",
         ):
             self.assertIn(selector, css)
-        for token in ("height:72%", "overflow:hidden", "var(--theme-primary)", "var(--theme-accent)"):
+        for token in ("height:64%", "height:36%", "overflow:hidden", "var(--theme-primary)", "var(--theme-accent)"):
             self.assertIn(token, css)
 
 

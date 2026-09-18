@@ -22,11 +22,13 @@ FEATURE_CSS = """
 .art-page .pr-list{list-style:none;padding:0;margin:0;padding-top:3cqw}
 .art-page .pr-list li{display:flex;justify-content:space-between;gap:2cqw}
 .art-page .pr-list li::before{align-self:center}
-/* all photos share one 72/28 frame so facing leaves align across orientations */
+/* portrait photos are full-screen; landscape photos use a separate copy band */
 .art-page.bleed{background:#111}
-.art-page .photo-frame{position:absolute;inset:0;margin:0;overflow:hidden;background:#111}
-.art-page .photo-frame img{position:absolute;left:0;top:0;width:100%;height:72%;object-fit:cover;object-position:center}
-.art-page .photo-frame .bleed-cap{position:absolute;left:0;right:0;bottom:0;height:28%;box-sizing:border-box;overflow:hidden;margin:0;padding:5cqw 7%;color:#fff;background:linear-gradient(135deg,#151515,color-mix(in srgb,var(--theme-primary) 82%,#151515));display:flex;flex-direction:column;justify-content:center;gap:1.2cqw}
+.art-page .portrait-full{position:absolute;inset:0;margin:0;overflow:hidden;background:#111}
+.art-page .portrait-full img{width:100%;height:100%;object-fit:cover;object-position:center}
+.art-page .landscape-split{position:absolute;inset:0;margin:0;overflow:hidden;background:var(--theme-paper)}
+.art-page .landscape-split img{position:absolute;left:0;top:0;width:100%;height:66%;object-fit:contain;object-position:center;background:#111}
+.art-page .landscape-split .bleed-cap{position:absolute;left:0;right:0;bottom:0;height:34%;box-sizing:border-box;overflow:hidden;margin:0;padding:5cqw 7%;color:var(--theme-accent-ink);background:var(--theme-primary);display:flex;flex-direction:column;justify-content:center;gap:1.2cqw}
 .art-page .bleed-cap strong{font:700 4.2cqw/1.05 var(--book-sans);letter-spacing:-.01em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .art-page .bleed-cap>span{font:600 1.9cqw/1.35 var(--book-sans);letter-spacing:.08em;text-transform:uppercase}
 .art-page .bleed-cap .photo-note{-webkit-line-clamp:2;text-transform:none;letter-spacing:.02em;font-weight:500}
@@ -109,13 +111,13 @@ html,body,.room{background:color-mix(in srgb,var(--theme-primary) 2%,white);colo
 .art-page .heatmap-summary span{font:600 1.65cqw/1.3 var(--book-sans);letter-spacing:.06em;color:var(--theme-primary);white-space:nowrap}
 .art-page .heatmap-summary b{display:block;margin-bottom:.7cqw;font:700 3.2cqw/1 var(--book-sans);letter-spacing:-.02em}
 .art-page.poster-cover{overflow:hidden;background:var(--theme-primary)!important;color:var(--theme-accent-ink)}
-.art-page .cover-photo{position:absolute;left:0;right:0;top:0;height:72%;overflow:hidden}
+.art-page .cover-photo{position:absolute;left:0;right:0;top:0;height:64%;overflow:hidden}
 .art-page .cover-photo img{width:100%;height:100%;object-fit:cover}
-.art-page .cover-photo::after{position:absolute;inset:0;background:linear-gradient(to bottom,rgb(0 0 0 / 4%) 38%,var(--theme-primary) 100%);content:""}
-.art-page .cover-year{position:absolute;z-index:2;left:6%;top:5%;font:900 16cqw/.78 var(--book-sans);letter-spacing:-.08em;color:var(--theme-accent)}
-.art-page .cover-kicker{position:absolute;z-index:2;left:7%;bottom:23%;margin:0;font:800 1.8cqw/1 var(--book-sans);letter-spacing:.2em;color:var(--theme-accent);text-transform:uppercase}
-.art-page .cover-story{position:absolute;z-index:2;left:7%;right:7%;bottom:12%;margin:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font:800 4.7cqw/1.05 var(--book-sans);color:var(--theme-accent-ink)}
-.art-page .cover-index{position:absolute;z-index:2;left:7%;right:7%;bottom:5%;display:flex;justify-content:space-between;border-top:1px solid color-mix(in srgb,var(--theme-accent) 65%,transparent);padding-top:2cqw;font:700 1.55cqw/1 var(--book-sans);letter-spacing:.09em;color:var(--theme-accent)}
+.art-page .cover-copy{position:absolute;left:0;right:0;bottom:0;height:36%;overflow:hidden;background:var(--theme-primary);color:var(--theme-accent-ink)}
+.art-page .cover-year{position:absolute;left:6%;top:8%;font:900 9.5cqw/.85 var(--book-sans);letter-spacing:-.06em;color:var(--theme-accent)}
+.art-page .cover-kicker{position:absolute;left:7%;top:37%;margin:0;font:800 1.6cqw/1 var(--book-sans);letter-spacing:.2em;color:var(--theme-accent);text-transform:uppercase}
+.art-page .cover-story{position:absolute;left:7%;right:7%;top:48%;margin:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font:800 4.1cqw/1.05 var(--book-sans);color:var(--theme-accent-ink)}
+.art-page .cover-index{position:absolute;left:7%;right:7%;bottom:9%;display:flex;justify-content:space-between;border-top:1px solid color-mix(in srgb,var(--theme-accent) 65%,transparent);padding-top:2cqw;font:700 1.45cqw/1 var(--book-sans);letter-spacing:.08em;color:var(--theme-accent)}
 .art-page .cover-route{position:absolute;inset:14% 10% 28%;opacity:.58}
 .art-page .cover-route .route-heatmap{width:100%;height:100%}
 .art-page.review-page{overflow:hidden}

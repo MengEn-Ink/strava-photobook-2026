@@ -63,11 +63,13 @@ def _cover(year: str, review: YearReview, selection: CoverSelection | None, rout
     if selection:
         title = _esc(_short(selection.activity.name, 42))
         return (f'<article class="book-page art-page cloth recto poster-cover" data-density="hard" '
-                f'data-cover-mode="photo" aria-label="Front cover">'
+                f'data-cover-mode="photo" data-layout="subject-safe" data-overlay="forbid" '
+                f'data-image-zone="0,0,100,64" data-copy-zone="0,64,100,36" aria-label="Front cover">'
                 f'<div class="cover-photo"><img src="{selection.photo.web_path}" alt="" '
                 f'style="object-position:{selection.object_position}"></div>'
-                f'<div class="cover-year">{year}</div><p class="cover-kicker">YEAR IN MOTION</p>'
-                f'<h2 class="cover-story">{title}</h2>{metrics}</article>')
+                f'<div class="cover-copy"><div class="cover-year">{year}</div>'
+                f'<p class="cover-kicker">YEAR IN MOTION</p><h2 class="cover-story">{title}</h2>'
+                f'{metrics}</div></article>')
     return (f'<article class="book-page art-page cloth recto poster-cover" data-density="hard" '
             f'data-cover-mode="route" aria-label="Front cover"><div class="cover-route">{route}</div>'
             f'<div class="cover-year">{year}</div><p class="cover-kicker">ROUTE ARCHIVE</p>'
@@ -155,13 +157,19 @@ def _activity_photo_page(side: str, highlight: Highlight, ph, folio: str) -> str
     cap = (f'<figcaption class="bleed-cap"><strong>{_esc(_short(a.name, 64))}</strong>'
            f'<span>{_esc(a.date_label)} · {a.distance_km:.0f} km · 爬升 {a.elev_m:.0f} m</span>'
            f'{original}</figcaption>')
-    orientation = "landscape" if ph.landscape else "portrait"
     month = int(a.month_label.removesuffix("月")) if a.month_label else 0
+    if ph.landscape:
+        figure = (f'<figure class="landscape-split" data-layout="landscape-split" '
+                  f'data-image-zone="0,0,100,66" data-copy-zone="0,66,100,34">'
+                  f'<img src="{ph.web_path}" alt="{_esc(ph.caption) or "ride photo"}">{cap}</figure>')
+    else:
+        figure = (f'<figure class="portrait-full" data-layout="portrait-full" '
+                  f'data-overlay="forbid"><img src="{ph.web_path}" '
+                  f'alt="{_esc(ph.caption) or _esc(_short(a.name, 40))}"></figure>')
     return (f'<article class="book-page art-page bleed {side}" data-activity-id="{_esc(a.id)}" '
             f'data-month="{month}" '
             f'aria-label="{_esc(_short(a.name, 40))} photo">'
-            f'<figure class="photo-frame" data-photo-orientation="{orientation}">'
-            f'<img src="{ph.web_path}" alt="{_esc(ph.caption) or "ride photo"}">{cap}</figure>'
+            f'{figure}'
             f'</article>')
 
 
