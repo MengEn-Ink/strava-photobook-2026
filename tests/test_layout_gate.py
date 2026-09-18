@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 
 from strava_photobook.theme import FEATURE_CSS, THEME_CSS
 
@@ -17,6 +18,16 @@ class LayoutContractTests(unittest.TestCase):
         self.assertIn("max-height:76%", css)
         self.assertIn("overflow:hidden", css)
         self.assertIn(".year-statsp{margin:002.6cqw}", css)
+
+    def test_theme_variables_cover_book_and_picker_surfaces(self):
+        css = (FEATURE_CSS + THEME_CSS).replace(" ", "")
+        runtime = Path("runtime/styles.css").read_text(encoding="utf-8").replace(" ", "")
+        for variable in ("--theme-primary", "--theme-accent", "--theme-accent-ink", "--theme-paper"):
+            self.assertIn(variable, css + runtime)
+        for token in ("min-height:44px", "max-height:55dvh", "overflow:auto"):
+            self.assertIn(token, runtime)
+        for selector in (".cloth{", ".feat-reason{", ".photo-kicker{", ".routecircle{"):
+            self.assertIn(selector, css)
 
 
 if __name__ == "__main__":

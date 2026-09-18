@@ -87,6 +87,10 @@ def check(css: str) -> list[str]:
         if required not in compact:
             errors.append(f"缺少防溢出规则：{required}")
 
+    for variable in ("--theme-primary", "--theme-accent", "--theme-accent-ink", "--theme-paper"):
+        if variable not in css:
+            errors.append(f"缺少主题变量：{variable}")
+
     return errors
 
 

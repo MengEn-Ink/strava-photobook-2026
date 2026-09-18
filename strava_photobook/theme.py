@@ -32,7 +32,7 @@ FEATURE_CSS = """
 .art-page .full-bleed .bleed-cap,.art-page .contain .bleed-cap{position:absolute;left:0;right:0;bottom:0;max-height:36%;box-sizing:border-box;overflow:hidden;margin:0;padding:13cqw 7% 5%;color:#fff;background:linear-gradient(to top,rgb(0 0 0 / 82%),rgb(0 0 0 / 42%) 62%,transparent);display:flex;flex-direction:column;gap:1.2cqw}
 .art-page .bleed-cap strong{font:700 4.2cqw/1.05 var(--book-sans);letter-spacing:-.01em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .art-page .bleed-cap>span{font:600 1.9cqw/1.35 var(--book-sans);letter-spacing:.08em;text-transform:uppercase}
-.art-page .bleed-cap .photo-kicker{color:#ff5a36}
+.art-page .bleed-cap .photo-kicker{color:var(--theme-accent)}
 .art-page .bleed-cap .photo-note{-webkit-line-clamp:2;text-transform:none;letter-spacing:.02em;font-weight:500}
 .art-page.bleed .folio{color:#fff;text-shadow:0 1px 2px rgb(0 0 0 / 45%);z-index:2}
 .art-page .feat-route{position:absolute;right:8%;bottom:11%;width:25%;opacity:1}
@@ -55,19 +55,21 @@ FEATURE_CSS = """
 THEME_CSS = """
 /* ===== Strava Photobook · Pas Normal Studios-inspired theme ===== */
 :root{
-  --paper:#ffffff; --ink:#0a0a0a; --cloth:#0a0a0a;
+  --theme-primary:#0A0A0A;--theme-accent:#FF5A36;--theme-accent-ink:#FFFFFF;
+  --theme-paper:color-mix(in srgb,var(--theme-primary) 3%,white);
+  --paper:var(--theme-paper); --ink:#0a0a0a; --cloth:var(--theme-primary);
   --book-serif:"Helvetica Neue",Inter,"PingFang SC","Hiragino Sans GB",Arial,sans-serif;
   --book-sans:"Helvetica Neue",Inter,Arial,sans-serif;
 }
-html,body,.room{background:#ffffff;color:var(--ink)}
-.art-page{background:#ffffff !important}
-.art-page.endpaper{background:#f2f2f2 !important}
-.art-page.cloth{background:#0a0a0a !important;color:#fff}
+html,body,.room{background:color-mix(in srgb,var(--theme-primary) 2%,white);color:var(--ink)}
+.art-page{background:var(--theme-paper) !important}
+.art-page.endpaper{background:color-mix(in srgb,var(--theme-primary) 7%,white) !important}
+.art-page.cloth{background:var(--theme-primary) !important;color:#fff}
 .book{filter:drop-shadow(0 10px 24px rgb(0 0 0 / 18%))}
 .book-header h1{font:600 18px/1.2 var(--book-sans);letter-spacing:.14em;text-transform:uppercase}
 .book-header a,.book-header span{font:500 10px/1.4 var(--book-sans);letter-spacing:.18em;text-transform:uppercase;color:#111}
-.controls button{border:1px solid #111;border-radius:0;background:#fff;color:#111}
-.controls button:hover:not(:disabled){background:#111;color:#fff}
+.controls button{border:1px solid var(--theme-primary);border-radius:0;background:#fff;color:var(--theme-primary)}
+.controls button:hover:not(:disabled){background:var(--theme-primary);color:#fff}
 .status span{font:600 10px/1.4 var(--book-sans);letter-spacing:.22em;text-transform:uppercase;color:#111}
 .status small{font:500 9px/1.4 var(--book-sans);letter-spacing:.12em;text-transform:uppercase;color:#8a8a8a}
 .art-page .cover-title{font:700 20cqw/.9 var(--book-sans);letter-spacing:-.02em;text-shadow:none;color:#fff}
@@ -84,19 +86,19 @@ html,body,.room{background:#ffffff;color:var(--ink)}
 .art-page .year-stats p:first-child{margin-bottom:4cqw}
 .art-page .colophon .small-print{font:500 1.8cqw/1.6 var(--book-sans);color:#8a8a8a}
 .art-page .feat-month{font:600 2.2cqw/1 var(--book-sans);letter-spacing:.28em;color:#111;text-transform:uppercase}
-.art-page .feat-reason{align-self:flex-start;margin:0 0 3cqw;padding:.8cqw 1.4cqw;background:#ff5a36;color:#fff;font:700 1.6cqw/1 var(--book-sans);letter-spacing:.12em;text-transform:uppercase}
+.art-page .feat-reason{align-self:flex-start;margin:0 0 3cqw;padding:.8cqw 1.4cqw;background:var(--theme-accent);color:var(--theme-accent-ink);font:700 1.6cqw/1 var(--book-sans);letter-spacing:.12em;text-transform:uppercase}
 .art-page .feat-title{font:700 7.2cqw/1.0 var(--book-sans);letter-spacing:-.02em;text-transform:uppercase}
 .art-page .feat-stats{font:500 2.5cqw/1.5 var(--book-sans);letter-spacing:.02em;color:#111}
 .art-page .feat-tags{font:600 2.6cqw/1.4 var(--book-sans);letter-spacing:.06em;color:#111;text-transform:uppercase}
 .art-page .feat-desc{font:500 2.6cqw/1.48 var(--book-sans);color:#111}
 .art-page .companions .avatar{border:.4cqw solid #fff;box-shadow:0 0 0 .4cqw #111}
-.art-page .companions .avatar-fallback,.art-page .companions .avatar-more{background:#111;color:#fff;font:600 2.4cqw/1 var(--book-sans);letter-spacing:.02em}
+.art-page .companions .avatar-fallback,.art-page .companions .avatar-more{background:var(--theme-primary);color:#fff;font:600 2.4cqw/1 var(--book-sans);letter-spacing:.02em}
 .art-page .companions-label{font:600 2.4cqw/1.3 var(--book-sans);letter-spacing:.06em;color:#111;text-transform:uppercase}
 .art-page .pr-list{border-top:1px solid #111}
 .art-page .pr-list li{font:500 2.3cqw/1.7 var(--book-sans);color:#111}
 .art-page .pr-list li::before{content:"PR";font:600 1.6cqw var(--book-sans);letter-spacing:.1em;color:#8a8a8a}
 .folio{font:600 1.7cqw/1 var(--book-sans);letter-spacing:.1em;color:#111}
 .art-page .feat-route .route path{stroke:#c2c2c2}
-.art-page .feat-route .route circle{fill:#9a9a9a}
+.art-page .feat-route .route circle{fill:var(--theme-accent)}
 .art-page .bleed-cap{font:600 2.2cqw/1.35 var(--book-sans);letter-spacing:.14em;text-transform:uppercase}
 """
