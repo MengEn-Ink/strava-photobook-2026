@@ -1,3 +1,5 @@
+import { THEMES, applyTheme, storedTheme } from "./theme-catalog.js";
+
 const bookElement = document.querySelector("#book");
 const pages = bookElement.querySelectorAll(".book-page");
 const previousButton = document.querySelector("#previous");
@@ -6,7 +8,47 @@ const pageStatus = document.querySelector("#page-status");
 const orientationStatus = document.querySelector("#orientation");
 const pageWidth = Number(bookElement.dataset.pageWidth) || 512;
 const pageHeight = Number(bookElement.dataset.pageHeight) || 640;
+const themePicker = document.querySelector(".theme-picker");
+const themeToggle = document.querySelector("#theme-toggle");
+const themePopover = document.querySelector("#theme-popover");
+const themeOptions = [...document.querySelectorAll("[data-theme-id]")];
 document.documentElement.style.setProperty("--page-ratio", pageWidth / pageHeight);
+
+function updateThemeButtons(activeId) {
+  themeOptions.forEach((option) => option.setAttribute("aria-pressed", String(option.dataset.themeId === activeId)));
+  themeToggle?.setAttribute("aria-label", `选择画册主题，当前：${THEMES.find((item) => item.id === activeId)?.name || "默认"}`);
+}
+
+function chooseTheme(id) {
+  const theme = applyTheme(id);
+  updateThemeButtons(theme.id);
+}
+
+function setThemePopover(open, returnFocus = false) {
+  if (!themeToggle || !themePopover) return;
+  themePopover.hidden = !open;
+  themeToggle.setAttribute("aria-expanded", String(open));
+  if (open) {
+    (themeOptions.find((item) => item.getAttribute("aria-pressed") === "true") || themeOptions[0])?.focus();
+  } else if (returnFocus) {
+    themeToggle.focus();
+  }
+}
+
+if (themeToggle && themePopover) {
+  chooseTheme(storedTheme());
+  themeToggle.addEventListener("click", () => setThemePopover(themePopover.hidden));
+  themeOptions.forEach((option) => option.addEventListener("click", () => chooseTheme(option.dataset.themeId)));
+  document.addEventListener("click", (event) => {
+    if (!themePopover.hidden && !themePicker.contains(event.target)) setThemePopover(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !themePopover.hidden) {
+      event.preventDefault();
+      setThemePopover(false, true);
+    }
+  });
+}
 
 const pageFlip = new St.PageFlip(bookElement, {
   width: pageWidth,

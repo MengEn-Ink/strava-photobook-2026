@@ -9,7 +9,10 @@
 <body>
 <main class="room">
   <header class="book-header">
-    <span>Photographs</span><h1>Book title</h1><span id="orientation">Open spread</span>
+    <span>Photographs</span><h1>Book title</h1>
+    <div class="header-tools"><span id="orientation">Open spread</span>
+      <div class="theme-picker"><button id="theme-toggle" class="theme-toggle" type="button" aria-expanded="false" aria-controls="theme-popover"><span class="current-swatch" aria-hidden="true"></span><span>主题</span></button><div id="theme-popover" class="theme-popover" role="dialog" aria-label="选择画册主题" hidden><div class="theme-options"></div></div></div>
+    </div>
   </header>
   <section class="stage" aria-label="Interactive photo book">
     <div class="book-rig">
