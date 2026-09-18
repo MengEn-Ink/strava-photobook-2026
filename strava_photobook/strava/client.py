@@ -117,13 +117,19 @@ class StravaClient:
     def athlete(self) -> dict[str, Any]:
         return self._get("/athlete")
 
-    def iter_activities(self, per_page: int = 200, pause: float = 1.0) -> Iterator[dict]:
+    def iter_activities(
+        self, per_page: int = 200, pause: float = 1.0, *, after: int | None = None,
+        before: int | None = None,
+    ) -> Iterator[dict]:
         """Yield every activity summary, page by page (cheap: 1 req / 200 acts)."""
         page = 1
         while True:
-            batch = self._get(
-                "/athlete/activities", params={"per_page": per_page, "page": page}
-            )
+            params = {"per_page": per_page, "page": page}
+            if after is not None:
+                params["after"] = after
+            if before is not None:
+                params["before"] = before
+            batch = self._get("/athlete/activities", params=params)
             if not batch:
                 return
             yield from batch

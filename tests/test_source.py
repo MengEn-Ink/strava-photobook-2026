@@ -6,7 +6,7 @@ from PIL import Image
 
 from strava_photobook.config import Config, GitHubConfig, StravaCreds
 from strava_photobook.model import Activity
-from strava_photobook.source import hydrate_activity
+from strava_photobook.source import fetch_activities, hydrate_activity
 
 
 class EmptyPhotoClient:
@@ -17,7 +17,30 @@ class EmptyPhotoClient:
         return []
 
 
+class ActivityListClient:
+    def __init__(self):
+        self.calls = []
+
+    def iter_activities(self, **kwargs):
+        self.calls.append(kwargs)
+        yield {"id": 1, "start_date_local": "2026-01-01T00:00:00Z", "map": {}}
+
+
 class PhotoCacheTests(unittest.TestCase):
+    def test_fetch_can_limit_list_requests_to_one_year(self):
+        with tempfile.TemporaryDirectory() as raw_root:
+            root = Path(raw_root)
+            runtime = root / "runtime"
+            runtime.mkdir()
+            cfg = Config(root, root / "data", root / "books", runtime, StravaCreds(), GitHubConfig())
+            client = ActivityListClient()
+
+            fetch_activities(cfg, year="2026", client=client)
+
+            kwargs = client.calls[0]
+            self.assertEqual(kwargs["after"], 1767225600)
+            self.assertEqual(kwargs["before"], 1798761600)
+
     def test_hydrate_uses_cached_activity_photos_when_api_returns_none(self):
         with tempfile.TemporaryDirectory() as raw_root:
             root = Path(raw_root)

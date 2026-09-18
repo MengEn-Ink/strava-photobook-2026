@@ -43,6 +43,11 @@ jobs:
           test -n "$STRAVA_REFRESH_TOKEN"
           test -n "$SECRETS_ADMIN_TOKEN"
 
+      - name: Select current book year
+        run: |
+          book_year="$(TZ=Asia/Shanghai date +%Y)"
+          echo "BOOK_YEAR=$book_year" >> "$GITHUB_ENV"
+
       - name: Restore public photo baseline
         run: |
           previous_root="$(mktemp -d)"
@@ -59,7 +64,10 @@ jobs:
       - name: Fetch current Strava activities
         id: fetch
         continue-on-error: true
-        run: python -m strava_photobook fetch
+        run: |
+          echo "FETCH_OK=false" >> "$GITHUB_ENV"
+          python -m strava_photobook fetch --year "$BOOK_YEAR"
+          echo "FETCH_OK=true" >> "$GITHUB_ENV"
 
       - name: Persist rotated Strava refresh token
         if: always()
@@ -73,15 +81,17 @@ jobs:
 
       - name: Retry Strava fetch after rate limit
         if: steps.fetch.outcome == 'failure'
+        continue-on-error: true
         run: |
           # Strava resets its short-term quota on fixed 15-minute UTC boundaries.
           wait_seconds=$((900 - $(date +%s) % 900 + 60))
           echo "Waiting ${wait_seconds}s for the next Strava quota window"
           sleep "$wait_seconds"
-          python -m strava_photobook fetch
+          python -m strava_photobook fetch --year "$BOOK_YEAR"
+          echo "FETCH_OK=true" >> "$GITHUB_ENV"
 
       - name: Persist refresh token after retry
-        if: steps.fetch.outcome == 'failure'
+        if: steps.fetch.outcome == 'failure' && env.FETCH_OK == 'true'
         env:
           GH_TOKEN: ${{ secrets.SECRETS_ADMIN_TOKEN }}
         run: |
@@ -89,12 +99,11 @@ jobs:
             | gh secret set STRAVA_REFRESH_TOKEN --repo "$GITHUB_REPOSITORY"
 
       - name: Build current-year photobook
-        run: |
-          book_year="$(TZ=Asia/Shanghai date +%Y)"
-          echo "BOOK_YEAR=$book_year" >> "$GITHUB_ENV"
-          python -m strava_photobook build "$book_year"
+        if: env.FETCH_OK == 'true'
+        run: python -m strava_photobook build "$BOOK_YEAR"
 
       - name: Test and validate before publishing
+        if: env.FETCH_OK == 'true'
         run: |
           python -m unittest discover -v
           node --test runtime/*.test.mjs
@@ -103,6 +112,7 @@ jobs:
           python tools/validate_release.py "books/$BOOK_YEAR" --baseline "$PREVIOUS_BOOK" --require-heatmap
 
       - name: Publish gh-pages atomically
+        if: env.FETCH_OK == 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |

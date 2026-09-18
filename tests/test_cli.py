@@ -8,6 +8,13 @@ from strava_photobook.github.publisher import PublishResult
 
 
 class CLITests(unittest.TestCase):
+    def test_fetch_accepts_a_year_scope(self):
+        with tempfile.TemporaryDirectory() as root, patch(
+            "strava_photobook.source.fetch_activities", return_value=[]
+        ) as fetch:
+            cli.main(["--root", root, "fetch", "--year", "2026"])
+            self.assertEqual(fetch.call_args.kwargs["year"], "2026")
+
     def test_github_auth_falls_back_to_gh_cli(self):
         completed = type("Completed", (), {"stdout": "oauth-token\n", "returncode": 1})()
         with tempfile.TemporaryDirectory() as root, patch.dict("os.environ", {}, clear=True), patch(

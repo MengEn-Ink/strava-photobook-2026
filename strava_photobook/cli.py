@@ -58,7 +58,7 @@ def _update_env(path: Path, values: dict[str, str]) -> None:
 def _cmd_fetch(cfg: Config, args) -> None:
     from . import source
 
-    recs = source.fetch_activities(cfg)
+    recs = source.fetch_activities(cfg, year=args.year)
     print(f"已缓存 {len(recs)} 条活动 -> {cfg.summaries_path}")
 
 
@@ -134,7 +134,8 @@ def main(argv: list[str] | None = None) -> None:
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("auth", help="浏览器 OAuth 授权，获取 refresh token")
-    sub.add_parser("fetch", help="缓存全部活动概要")
+    fetch = sub.add_parser("fetch", help="缓存活动概要")
+    fetch.add_argument("--year", help="只同步指定年份，适合每日自动更新")
     sub.add_parser("years", help="列出缓存中的年份")
     sub.add_parser("github-auth", help="通过 GitHub Device Flow 授权")
     b = sub.add_parser("build", help="生成某一年的翻页画册")

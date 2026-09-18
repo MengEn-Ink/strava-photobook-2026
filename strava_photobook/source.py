@@ -32,18 +32,28 @@ def _client(cfg: Config) -> StravaClient:
     return StravaClient(s.client_id, s.client_secret, s.refresh_token, cfg.token_cache)
 
 
-def fetch_activities(cfg: Config) -> list[dict]:
+def fetch_activities(
+    cfg: Config, year: str | None = None, *, client: StravaClient | None = None
+) -> list[dict]:
     """Pull every activity summary and cache it. Returns the raw records."""
+    from datetime import datetime, timezone
+
     cfg.ensure_dirs()
-    client = _client(cfg)
+    client = client or _client(cfg)
+    bounds = {}
+    if year:
+        start = datetime(int(year), 1, 1, tzinfo=timezone.utc)
+        end = datetime(int(year) + 1, 1, 1, tzinfo=timezone.utc)
+        bounds = {"after": int(start.timestamp()), "before": int(end.timestamp())}
     out: list[dict] = []
-    for a in client.iter_activities(pause=cfg.request_pause):
+    for a in client.iter_activities(pause=cfg.request_pause, **bounds):
         rec = {k: a.get(k) for k in _KEEP}
         rec["summary_polyline"] = (a.get("map") or {}).get("summary_polyline") or ""
         out.append(rec)
-    cfg.summaries_path.write_text(
-        json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8"
-    )
+    if year and cfg.summaries_path.is_file():
+        previous = json.loads(cfg.summaries_path.read_text(encoding="utf-8"))
+        out = [record for record in previous if not str(record.get("start_date_local") or "").startswith(year)] + out
+    cfg.summaries_path.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
     return out
 
 
