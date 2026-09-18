@@ -57,9 +57,13 @@ test("theme picker interaction is persistent and keyboard accessible", () => {
   assert.match(script, /Escape/);
   assert.match(script, /document\.addEventListener\("click"/);
   assert.match(script, /themeToggle\.focus/);
-  assert.match(script, /clickDirection/);
+  assert.match(script, /tapDirection/);
   assert.match(script, /isInteractiveTarget/);
   assert.match(script, /disableFlipByClick:\s*true/);
+  assert.match(script, /pointerup/);
+  assert.match(script, /capture:\s*true/);
+  assert.match(script, /flippingTime:\s*460/);
+  assert.match(script, /drawShadow:\s*false/);
 });
 
 test("month timeline is accessible and photo folios stay outside artwork", () => {
