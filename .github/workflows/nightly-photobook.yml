@@ -16,7 +16,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
       STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
@@ -57,9 +57,28 @@ jobs:
           fi
 
       - name: Fetch current Strava activities
+        id: fetch
+        continue-on-error: true
         run: python -m strava_photobook fetch
 
       - name: Persist rotated Strava refresh token
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.SECRETS_ADMIN_TOKEN }}
+        run: |
+          if test -f data/.strava_token.json; then
+            python -c 'import json; print(json.load(open("data/.strava_token.json"))["refresh_token"])' \
+              | gh secret set STRAVA_REFRESH_TOKEN --repo "$GITHUB_REPOSITORY"
+          fi
+
+      - name: Retry Strava fetch after rate limit
+        if: steps.fetch.outcome == 'failure'
+        run: |
+          sleep 960
+          python -m strava_photobook fetch
+
+      - name: Persist refresh token after retry
+        if: steps.fetch.outcome == 'failure'
         env:
           GH_TOKEN: ${{ secrets.SECRETS_ADMIN_TOKEN }}
         run: |
