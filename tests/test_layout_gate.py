@@ -12,6 +12,12 @@ class LayoutContractTests(unittest.TestCase):
         self.assertIn("overflow:hidden", css)
         self.assertIn("-webkit-line-clamp", css)
 
+    def test_landscape_photos_share_a_fixed_image_band(self):
+        css = FEATURE_CSS.replace(" ", "")
+        self.assertIn(".art-page.containimg{", css)
+        for token in ("width:100%", "height:60%", "top:20%", "object-fit:cover", "object-position:center"):
+            self.assertIn(token, css)
+
     def test_year_statistics_have_a_bounded_compact_layout(self):
         css = (FEATURE_CSS + THEME_CSS).replace(" ", "")
         self.assertIn(".year-stats{", css)

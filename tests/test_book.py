@@ -1,7 +1,7 @@
 import unittest
 
 from strava_photobook import book
-from strava_photobook.book import _activity_photo_page, _document, _feature_page
+from strava_photobook.book import _activity_photo_page, _document, _feature_page, _frame_pages
 from strava_photobook.model import Activity, Highlight, Photo
 
 
@@ -50,6 +50,13 @@ class BookRenderingTests(unittest.TestCase):
             [(item.activity.id, featured) for item, featured in timeline],
             [("jan", False), ("mar", True), ("dec", True)],
         )
+
+    def test_book_frame_contains_no_blank_endpapers(self):
+        pages = _frame_pages("2026", {"rides": 1, "km": 10, "elev": 20, "lines": []}, ["activity"])
+        rendered = "".join(pages)
+        self.assertEqual(len(pages), 6)
+        self.assertNotIn("endpaper", rendered)
+        self.assertEqual(rendered.count('data-density="hard"'), 2)
 
     def test_long_feature_copy_is_bounded_before_render(self):
         rendered = _feature_page("recto", self.highlight)

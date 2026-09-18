@@ -290,6 +290,18 @@ def _chronological_activity_blocks(
     )
 
 
+def _frame_pages(year: str, stats: dict, activity_pages: list[str]) -> list[str]:
+    """Wrap meaningful content with covers without inserting blank leaves."""
+    return [
+        _cover(year, "A Year of Cycling · Strava"),
+        _title_page(year, stats),
+        _stats_page(stats),
+        *activity_pages,
+        _colophon(year),
+        _back(year),
+    ]
+
+
 def build_year(cfg: Config, year: str, activities: list[Activity], hydrate,
                avatar_fetcher=None) -> Path:
     """Build the book for `year`. `hydrate(act, photos_dir, remaining)` fills photos+PRs.
@@ -306,10 +318,7 @@ def build_year(cfg: Config, year: str, activities: list[Activity], hydrate,
     avatar = avatar_fetcher(photos_dir) if avatar_fetcher else None
     stats = _stats(ya)
 
-    pages = [_cover(year, "A Year of Cycling · Strava"),
-             _blank("front endpaper"),
-             _title_page(year, stats),
-             _stats_page(stats)]
+    activity_pages: list[str] = []
 
     side = ["recto", "verso"]
     used = 0
@@ -326,14 +335,14 @@ def build_year(cfg: Config, year: str, activities: list[Activity], hydrate,
     for highlight, is_featured in _chronological_activity_blocks(highlights, gallery):
         a = highlight.activity
         if is_featured:
-            pages.append(_feature_page(side[len(pages) % 2], highlight, avatar))
+            activity_pages.append(_feature_page(side[len(activity_pages) % 2], highlight, avatar))
         for ph in a.photos[:2]:
             if used >= cfg.photos_per_book:
                 break
-            pages.append(_activity_photo_page(side[len(pages) % 2], highlight, ph, str(used + 1)))
+            activity_pages.append(_activity_photo_page(side[len(activity_pages) % 2], highlight, ph, str(used + 1)))
             used += 1
 
-    pages += [_colophon(year), _blank("back endpaper"), _back(year)]
+    pages = _frame_pages(year, stats, activity_pages)
     (out / "index.html").write_text(_document(year, "\n        ".join(pages)), encoding="utf-8")
     print(f"built {out}  pages={len(pages)} photos={used}")
     return out
