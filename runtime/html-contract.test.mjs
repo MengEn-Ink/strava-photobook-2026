@@ -58,3 +58,10 @@ test("theme picker interaction is persistent and keyboard accessible", () => {
   assert.match(script, /document\.addEventListener\("click"/);
   assert.match(script, /themeToggle\.focus/);
 });
+
+test("month timeline is accessible and photo folios stay outside artwork", () => {
+  assert.match(index, /id="month-timeline"/);
+  assert.ok(script.includes('querySelectorAll(".month-jump")'));
+  assert.doesNotMatch(index, /class="folio"/);
+  assert.match(index, /month-timeline.js/);
+});

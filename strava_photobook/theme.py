@@ -67,8 +67,8 @@ html,body,.room{background:color-mix(in srgb,var(--theme-primary) 2%,white);colo
 .book{filter:drop-shadow(0 10px 24px rgb(0 0 0 / 18%))}
 .book-header h1{font:600 18px/1.2 var(--book-sans);letter-spacing:.14em;text-transform:uppercase}
 .book-header a,.book-header span{font:500 10px/1.4 var(--book-sans);letter-spacing:.18em;text-transform:uppercase;color:#111}
-.controls button{border:1px solid var(--theme-primary);border-radius:0;background:#fff;color:var(--theme-primary)}
-.controls button:hover:not(:disabled){background:var(--theme-primary);color:#fff}
+.controls>button{border:1px solid var(--theme-primary);border-radius:0;background:#fff;color:var(--theme-primary)}
+.controls>button:hover:not(:disabled){background:var(--theme-primary);color:#fff}
 .status span{font:600 10px/1.4 var(--book-sans);letter-spacing:.22em;text-transform:uppercase;color:#111}
 .status small{font:500 9px/1.4 var(--book-sans);letter-spacing:.12em;text-transform:uppercase;color:#8a8a8a}
 .art-page .cover-title{font:700 20cqw/.9 var(--book-sans);letter-spacing:-.02em;text-shadow:none;color:#fff}
@@ -96,7 +96,6 @@ html,body,.room{background:color-mix(in srgb,var(--theme-primary) 2%,white);colo
 .art-page .pr-list{border-top:1px solid #111}
 .art-page .pr-list li{font:500 2.3cqw/1.7 var(--book-sans);color:#111}
 .art-page .pr-list li::before{content:"PR";font:600 1.6cqw var(--book-sans);letter-spacing:.1em;color:#8a8a8a}
-.folio{font:600 1.7cqw/1 var(--book-sans);letter-spacing:.1em;color:#111}
 .art-page .feat-route .route path{stroke:#c2c2c2}
 .art-page .feat-route .route circle{fill:var(--theme-accent)}
 .art-page .bleed-cap{font:600 2.2cqw/1.35 var(--book-sans);letter-spacing:.14em;text-transform:uppercase}

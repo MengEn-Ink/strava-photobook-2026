@@ -40,11 +40,12 @@
   </section>
   <footer class="controls" aria-label="Book controls">
     <button id="previous" type="button" aria-label="Previous page">←</button>
-    <div class="status" aria-live="polite"><span id="page-status">Cover</span><small>Drag or use arrow keys</small></div>
+    <div class="control-center"><nav id="month-timeline" class="month-timeline" aria-label="Browse by month"></nav><div class="status" aria-live="polite"><span id="page-status">Cover</span><small>Drag or use arrow keys</small></div></div>
     <button id="next" type="button" aria-label="Next page">→</button>
   </footer>
 </main>
 <script src="vendor/page-flip.browser.js"></script>
-<script src="flipbook.js"></script>
+<script type="module" src="month-timeline.js"></script>
+<script type="module" src="flipbook.js"></script>
 </body>
 </html>

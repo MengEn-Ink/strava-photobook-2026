@@ -18,12 +18,14 @@ class BookRenderingTests(unittest.TestCase):
         photo = Photo("assets/photos/42.jpg", "Rain and mountains")
         rendered = _activity_photo_page("recto", self.highlight, photo, "7")
         self.assertIn('data-activity-id="42"', rendered)
+        self.assertIn('data-month="8"', rendered)
         self.assertIn("8月16日", rendered)
         self.assertIn("161 km", rendered)
         self.assertIn("爬升 1952 m", rendered)
         self.assertIn("Rain and mountains", rendered)
         self.assertNotIn("照片与骑行故事完整", rendered)
         self.assertNotIn("photo-kicker", rendered)
+        self.assertNotIn('class="folio"', rendered)
 
     def test_selected_activity_blocks_are_sorted_by_date(self):
         january = Highlight(
@@ -55,7 +57,12 @@ class BookRenderingTests(unittest.TestCase):
         self.assertIn("…", rendered)
 
     def test_document_renders_accessible_theme_picker_and_scripts(self):
-        rendered = _document("2026", "<article></article>")
+        body = (
+            '<article class="book-page" data-month="3"></article>'
+            '<article class="book-page" data-month="3"></article>'
+            '<article class="book-page" data-month="8"></article>'
+        )
+        rendered = _document("2026", body)
         self.assertIn('id="theme-toggle"', rendered)
         self.assertIn('aria-expanded="false"', rendered)
         self.assertIn('id="theme-popover"', rendered)
@@ -64,6 +71,11 @@ class BookRenderingTests(unittest.TestCase):
         self.assertIn('strava-photobook.theme', rendered)
         self.assertIn("style.setProperty('--theme-primary'", rendered)
         self.assertLess(rendered.index('theme-catalog.js'), rendered.index('flipbook.js'))
+        self.assertEqual(rendered.count('class="month-jump"'), 2)
+        self.assertIn('data-month="3" aria-label="跳到 3 月"', rendered)
+        self.assertIn('data-month="8" aria-label="跳到 8 月"', rendered)
+        self.assertIn('id="month-timeline"', rendered)
+        self.assertIn('month-timeline.js', rendered)
 
 
 if __name__ == "__main__":

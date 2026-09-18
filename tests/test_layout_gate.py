@@ -26,6 +26,8 @@ class LayoutContractTests(unittest.TestCase):
             self.assertIn(variable, css + runtime)
         for token in ("min-height:44px", "max-height:55dvh", "overflow:auto"):
             self.assertIn(token, runtime)
+        for token in (".month-timeline{", ".month-jump{", "min-width:44px", "overflow-x:auto"):
+            self.assertIn(token, runtime)
         for selector in (".cloth{", ".feat-reason{", ".routecircle{"):
             self.assertIn(selector, css)
         self.assertNotIn(".photo-kicker{", css)

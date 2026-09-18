@@ -90,10 +90,12 @@ def _activity_photo_page(side: str, highlight: Highlight, ph, folio: str) -> str
            f'<span>{_esc(a.date_label)} · {a.distance_km:.0f} km · 爬升 {a.elev_m:.0f} m</span>'
            f'{original}</figcaption>')
     mode = "contain" if ph.landscape else "full-bleed"
+    month = int(a.month_label.removesuffix("月")) if a.month_label else 0
     return (f'<article class="book-page art-page bleed {side}" data-activity-id="{_esc(a.id)}" '
+            f'data-month="{month}" '
             f'aria-label="{_esc(_short(a.name, 40))} photo">'
             f'<figure class="{mode}"><img src="{ph.web_path}" alt="{_esc(ph.caption) or "ride photo"}">{cap}</figure>'
-            f'<p class="folio">{folio}</p></article>')
+            f'</article>')
 
 
 def _companions(avatar: str | None, athlete_count: int) -> str:
@@ -114,6 +116,7 @@ def _companions(avatar: str | None, athlete_count: int) -> str:
 
 def _feature_page(side: str, highlight: Highlight, avatar: str | None = None) -> str:
     a = highlight.activity
+    month = int(a.month_label.removesuffix("月")) if a.month_label else 0
     tags = []
     if a.kudos:
         tags.append(f"♥ {a.kudos}")
@@ -130,7 +133,8 @@ def _feature_page(side: str, highlight: Highlight, avatar: str | None = None) ->
     companions = _companions(avatar, a.athlete_count)
     route = route_svg(a.polyline, stroke="#0a0a0a", stroke_width=2.6)
     route_html = f'<div class="feat-route">{route}</div>' if route else ""
-    return (f'<article class="book-page art-page paper {side}" data-activity-id="{_esc(a.id)}" aria-label="{_esc(a.name)[:40]}">'
+    return (f'<article class="book-page art-page paper {side}" data-activity-id="{_esc(a.id)}" '
+            f'data-month="{month}" aria-label="{_esc(a.name)[:40]}">'
             f'<div class="feature"><p class="feat-month">{a.date_label}</p>'
             f'<p class="feat-reason">{_esc(highlight.reason)}</p>'
             f'<h3 class="feat-title">{_esc(_short(a.name, 72))}</h3>'
@@ -176,6 +180,16 @@ def _theme_restore_script() -> str:
             "}}}catch(e){}})();</script>")
 
 
+def _month_timeline(body: str) -> str:
+    months = sorted({int(value) for value in __import__("re").findall(r'data-month="(\d+)"', body)})
+    buttons = "".join(
+        f'<button class="month-jump" type="button" data-month="{month}" '
+        f'aria-label="跳到 {month} 月" aria-controls="book"><span>{month}</span><b>月</b></button>'
+        for month in months
+    )
+    return f'<nav id="month-timeline" class="month-timeline" aria-label="按月份浏览">{buttons}</nav>'
+
+
 def _document(year: str, body: str) -> str:
     return f"""<!doctype html>
 <html lang="zh-CN" data-strava-photobook="1">
@@ -202,12 +216,15 @@ def _document(year: str, body: str) -> str:
   </section>
   <footer class="controls" aria-label="Book controls">
     <button id="previous" type="button" aria-label="Previous page">←</button>
-    <div class="status" aria-live="polite"><span id="page-status">Cover</span><small>拖动或方向键翻页</small></div>
+    <div class="control-center">{_month_timeline(body)}
+      <div class="status" aria-live="polite"><span id="page-status">Cover</span><small>拖动或方向键翻页</small></div>
+    </div>
     <button id="next" type="button" aria-label="Next page">→</button>
   </footer>
 </main>
 <script src="vendor/page-flip.browser.js"></script>
 <script type="module" src="theme-catalog.js"></script>
+<script type="module" src="month-timeline.js"></script>
 <script type="module" src="flipbook.js"></script>
 </body>
 </html>
