@@ -14,3 +14,8 @@ test("activeMonthAtPage reads either visible page in a landscape spread", () => 
   assert.equal(activeMonthAtPage(pages, 1, "landscape"), "2");
   assert.equal(activeMonthAtPage(pages, 3, "portrait"), "5");
 });
+
+test("a landscape spread crossing months highlights the newer right page", () => {
+  const pages = [{ dataset: {} }, { dataset: { month: "7" } }, { dataset: { month: "8" } }];
+  assert.equal(activeMonthAtPage(pages, 1, "landscape"), "8");
+});

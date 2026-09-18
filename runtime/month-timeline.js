@@ -9,7 +9,7 @@ export function firstPageByMonth(pages) {
 
 export function activeMonthAtPage(pages, pageIndex, orientation) {
   const visible = orientation === "landscape" && pageIndex > 0
-    ? [pageIndex, pageIndex + 1]
+    ? [pageIndex + 1, pageIndex]
     : [pageIndex];
   for (const index of visible) {
     const month = pages[index]?.dataset.month;
