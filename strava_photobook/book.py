@@ -170,10 +170,11 @@ def _theme_picker() -> str:
 
 
 def _theme_restore_script() -> str:
-    ids = ",".join(f'"{item[0]}"' for item in THEME_OPTIONS)
+    themes = ",".join(f'"{item[0]}":["{item[2]}","{item[3]}"]' for item in THEME_OPTIONS)
     return ("<script>(function(){try{var k='strava-photobook.theme',v=localStorage.getItem(k),"
-            f"a=[{ids}];if(a.indexOf(v)>-1)document.documentElement.dataset.theme=v;"
-            "}catch(e){}})();</script>")
+            f"t={{ {themes} }};if(t[v]){{var r=document.documentElement,c=t[v];r.dataset.theme=v;"
+            "r.style.setProperty('--theme-primary',c[0]);r.style.setProperty('--theme-accent',c[1]);"
+            "}}}catch(e){}})();</script>")
 
 
 def _document(year: str, body: str) -> str:

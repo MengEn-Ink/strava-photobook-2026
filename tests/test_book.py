@@ -34,6 +34,7 @@ class BookRenderingTests(unittest.TestCase):
         self.assertEqual(rendered.count('data-theme-id="'), 19)
         self.assertIn('aria-pressed="true"', rendered)
         self.assertIn('strava-photobook.theme', rendered)
+        self.assertIn("style.setProperty('--theme-primary'", rendered)
         self.assertLess(rendered.index('theme-catalog.js'), rendered.index('flipbook.js'))
 
 
