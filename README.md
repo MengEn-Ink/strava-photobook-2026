@@ -13,8 +13,8 @@
   当天刷出的赛段 PR，以及由 GPS 轨迹（polyline）解码而成的**矢量路线图**。
 - **照片画廊**：从 Strava 下载骑行照片并缩放。竖图满屏出血，横图完整显示（不裁切）。
 
-视觉采用干净的**黑白编辑风**（参考 Pas Normal Studios）：几何无衬线字体、大写大标题、
-充足留白。整套样式集中在一个 `theme.css`，方便替换。
+视觉默认采用干净的**黑白橙编辑风**，并内置 18 组撞色，共 19 种主题。点击顶栏“主题”
+即可即时切换，选择会自动保存，下次打开继续使用。
 
 > 翻页运行时改编自 MIT 许可的
 > [create-photo-flipbook-ui](https://github.com/HaichaoLihc/create-photo-flipbook-ui)。
@@ -132,8 +132,9 @@ strava-photobook/
 
 ### 换主题
 
-画册外观集中在 `strava_photobook/theme.py` 的 `THEME_CSS`，生成时写入每本画册的 `theme.css`
-并最后加载以覆盖运行时。改这里的配色、字体、字号即可，重新 `build` 生效。
+打开画册后点击顶栏“主题”，从双色色板中选择。默认是“黑白橙（默认）”；选择不会改变
+当前页，并会自动保存到浏览器的 `strava-photobook.theme`。要恢复默认，重新选择“黑白橙
+（默认）”，也可以在浏览器开发者工具中清除这个 localStorage 键。
 
 ## 门禁检测
 

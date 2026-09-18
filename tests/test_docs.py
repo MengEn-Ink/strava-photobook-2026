@@ -11,6 +11,12 @@ class BeginnerDocsTests(unittest.TestCase):
         ):
             self.assertIn(phrase, text)
 
+    def test_docs_explain_theme_switching_and_reset(self):
+        setup = Path("docs/setup.md").read_text("utf-8")
+        readme = Path("README.md").read_text("utf-8")
+        for phrase in ("19 种主题", "黑白橙", "自动保存", "strava-photobook.theme"):
+            self.assertIn(phrase, setup + readme)
+
 
 if __name__ == "__main__":
     unittest.main()

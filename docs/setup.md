@@ -21,6 +21,8 @@
 
 运行 `python3 -m strava_photobook build 2026`，再进入 `books/2026` 并执行 `python3 -m http.server 4173 --bind 127.0.0.1`。打开 http://127.0.0.1:4173 。预期封面出现，点击、拖动或方向键可以翻页；高光活动与照片连续出现，照片页显示活动标题和数据。按 Ctrl+C 停止预览。
 
+顶栏“主题”中有默认黑白橙和 18 组撞色，共 19 种主题。点击色板立即切换，不会跳页；选择会自动保存，下次打开仍然生效。要恢复默认，重新选择“黑白橙（默认）”。如果需要彻底清除偏好，可在浏览器开发者工具的 Local Storage 中删除 `strava-photobook.theme`。
+
 ## 5. 授权 GitHub
 
 运行 `python3 -m strava_photobook github-auth`。若已安装 GitHub CLI，终端会显示一次性验证码并打开浏览器。若没有，可创建 GitHub OAuth App、启用 Device Flow，并在 `.env` 设置 `GITHUB_CLIENT_ID`。预期终端显示授权成功并保存 `GITHUB_TOKEN`；不要复制或提交 token。
