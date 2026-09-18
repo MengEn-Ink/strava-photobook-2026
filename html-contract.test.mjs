@@ -45,3 +45,16 @@ test("vendored runtime and photo directory exist", async () => {
   assert.equal((await stat(new URL("vendor/page-flip.browser.js", root))).isFile(), true);
   assert.equal((await stat(new URL("assets/photos/", root))).isDirectory(), true);
 });
+
+test("theme picker interaction is persistent and keyboard accessible", () => {
+  assert.match(index, /id="theme-toggle"[^>]*aria-expanded="false"/);
+  assert.match(index, /id="theme-popover"[^>]*role="dialog"/);
+  assert.match(index, /class="theme-options"/);
+  assert.match(script, /storedTheme/);
+  assert.match(script, /applyTheme/);
+  assert.match(script, /aria-expanded/);
+  assert.match(script, /aria-pressed/);
+  assert.match(script, /Escape/);
+  assert.match(script, /document\.addEventListener\("click"/);
+  assert.match(script, /themeToggle\.focus/);
+});
