@@ -1,4 +1,5 @@
 import { THEMES, applyTheme, storedTheme } from "./theme-catalog.js";
+import { activeMonthAtPage, firstPageByMonth } from "./month-timeline.js";
 
 const bookElement = document.querySelector("#book");
 const pages = bookElement.querySelectorAll(".book-page");
@@ -12,6 +13,8 @@ const themePicker = document.querySelector(".theme-picker");
 const themeToggle = document.querySelector("#theme-toggle");
 const themePopover = document.querySelector("#theme-popover");
 const themeOptions = [...document.querySelectorAll("[data-theme-id]")];
+const monthButtons = [...document.querySelectorAll(".month-jump")];
+const monthPages = firstPageByMonth(pages);
 document.documentElement.style.setProperty("--page-ratio", pageWidth / pageHeight);
 
 function updateThemeButtons(activeId) {
@@ -75,6 +78,15 @@ const pageFlip = new St.PageFlip(bookElement, {
 
 let currentPage = 0;
 let isTurning = false;
+let currentOrientation = "landscape";
+
+function updateMonthTimeline() {
+  const activeMonth = activeMonthAtPage(pages, currentPage, currentOrientation);
+  monthButtons.forEach((button) => {
+    if (button.dataset.month === activeMonth) button.setAttribute("aria-current", "true");
+    else button.removeAttribute("aria-current");
+  });
+}
 
 function updateControls() {
   const pageCount = pageFlip.getPageCount();
@@ -91,6 +103,7 @@ function updateControls() {
   } else {
     pageStatus.textContent = `${String(currentPage + 1).padStart(2, "0")} / ${String(pageCount).padStart(2, "0")}`;
   }
+  updateMonthTimeline();
 }
 
 pageFlip.on("flip", (event) => {
@@ -104,8 +117,10 @@ pageFlip.on("changeState", (event) => {
 });
 
 function updateOrientation(orientation) {
+  currentOrientation = orientation;
   bookElement.dataset.layout = orientation;
   orientationStatus.textContent = orientation === "portrait" ? "Single page" : "Open spread";
+  updateMonthTimeline();
 }
 
 pageFlip.on("init", (event) => updateOrientation(event.data.mode));
@@ -126,6 +141,11 @@ previousButton.addEventListener("click", () => {
 nextButton.addEventListener("click", () => {
   if (!isTurning) pageFlip.flipNext("bottom");
 });
+
+monthButtons.forEach((button) => button.addEventListener("click", () => {
+  const page = monthPages.get(button.dataset.month);
+  if (!isTurning && Number.isInteger(page)) pageFlip.turnToPage(page);
+}));
 
 window.addEventListener("keydown", (event) => {
   if (event.altKey || event.ctrlKey || event.metaKey || isTurning) return;
