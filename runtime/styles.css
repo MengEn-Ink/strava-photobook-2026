@@ -45,6 +45,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--theme-accent); 
 @media (max-width: 700px) {
   .room { padding: 12px 8px calc(10px + env(safe-area-inset-bottom)); }
   .book-header { grid-template-columns: 1fr auto; }
+  .book-header > span:first-child { display: none; }
   .book-header h1 { font-size: 13px; }
   .book-header #orientation { display: none; }
   .header-tools { gap: 0; }

@@ -15,6 +15,7 @@ books/
 
 # Node（运行时契约测试）
 node_modules/
+.superpowers/
 
 # 系统
 .DS_Store
