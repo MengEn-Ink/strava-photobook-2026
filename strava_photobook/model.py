@@ -41,6 +41,18 @@ class Activity:
         mm = re.search(r"\d{4}-(\d{2})", self.date)
         return f"{int(mm.group(1))}月" if mm else ""
 
+    @property
+    def date_label(self) -> str:
+        match = re.search(r"(\d{4})-(\d{2})-(\d{2})", self.date)
+        return f"{int(match.group(2))}月{int(match.group(3))}日" if match else self.month_label
+
+
+@dataclass(frozen=True)
+class Highlight:
+    activity: Activity
+    score: float
+    reason: str
+
 
 def clean_description(text: str) -> str:
     """Drop auto-generated weather/telemetry lines, keep the human lead."""
@@ -89,3 +101,62 @@ def select_highlights(year_acts: list[Activity], limit: int = 12) -> dict:
         )[:limit],
         "photo_acts": [a for a in year_acts if a.photo_count > 0],
     }
+
+
+def _title_key(name: str) -> str:
+    return re.sub(r"[^a-z0-9\u4e00-\u9fff]", "", (name or "").lower()).replace("ride", "")
+
+
+def _editorial_score(a: Activity) -> float:
+    score = min(a.kudos, 100) * 1.0
+    score += min(a.pr_count, 15) * 3.0
+    score += min(max(a.athlete_count - 1, 0), 10) * 2.0
+    score += min(a.distance_km, 200) * 0.10
+    score += min(a.elev_m, 3000) * 0.008
+    if a.photo_count:
+        score += 18 + min(a.photo_count, 8) * 1.5
+    if clean_description(a.description):
+        score += 16
+    if a.name and not re.fullmatch(r"(?:morning|evening|lunch|afternoon)?\s*ride", a.name, re.I):
+        score += 5
+    return score
+
+
+def _highlight_reason(a: Activity) -> str:
+    if a.photo_count and clean_description(a.description):
+        return "照片与骑行故事完整"
+    if a.pr_count >= 5:
+        return "年度 PR 高光"
+    if a.kudos >= 50:
+        return "年度最多点赞"
+    if a.distance_km >= 150 or a.elev_m >= 1800:
+        return "长距离挑战"
+    if a.athlete_count > 1:
+        return "多人同行"
+    if a.photo_count:
+        return "影像记录"
+    return "年度代表骑行"
+
+
+def select_editorial_highlights(year_acts: list[Activity], limit: int = 6) -> list[Highlight]:
+    """Select deterministic, photo-led highlights with month and title diversity."""
+    ranked = sorted(year_acts, key=lambda a: (-_editorial_score(a), a.date, a.id))
+    selected: list[Highlight] = []
+    seen_months: set[str] = set()
+    seen_titles: set[str] = set()
+    for diversity_pass in (True, False):
+        for activity in ranked:
+            if any(item.activity.id == activity.id for item in selected):
+                continue
+            title = _title_key(activity.name)
+            if title and title in seen_titles:
+                continue
+            if diversity_pass and activity.month_label in seen_months:
+                continue
+            selected.append(Highlight(activity, _editorial_score(activity), _highlight_reason(activity)))
+            seen_months.add(activity.month_label)
+            if title:
+                seen_titles.add(title)
+            if len(selected) >= limit:
+                return selected
+    return selected

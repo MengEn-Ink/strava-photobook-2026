@@ -10,12 +10,15 @@ FEATURE_CSS = """
 /* strava-photobook feature-page additions */
 /* text flows in a left column; the route glyph owns the bottom-right corner,
    so the two never share an x-band and cannot overlap regardless of length. */
-.art-page .feature{position:absolute;left:12%;right:37%;top:15%}
+.art-page .feature{position:absolute;left:10%;right:34%;top:11%;bottom:9%;overflow:hidden;display:flex;flex-direction:column}
 .art-page .feat-month{margin:0 0 3cqw}
 .art-page .feat-title{margin:0 0 3.5cqw}
 .art-page .feat-stats{margin:0 0 2cqw}
 .art-page .feat-tags{margin:0 0 4cqw}
 .art-page .feat-desc{margin:0 0 4cqw}
+.art-page .feat-title,.art-page .feat-desc,.art-page .photo-note{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
+.art-page .feat-title{-webkit-line-clamp:3}
+.art-page .feat-desc{-webkit-line-clamp:5}
 .art-page .pr-list{list-style:none;padding:0;margin:0;padding-top:3cqw}
 .art-page .pr-list li{display:flex;justify-content:space-between;gap:2cqw}
 .art-page .pr-list li::before{align-self:center}
@@ -26,7 +29,11 @@ FEATURE_CSS = """
 /* landscape photos: shown whole, letterboxed so nothing is cropped */
 .art-page .contain{position:absolute;inset:0;margin:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .art-page .contain img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
-.art-page .full-bleed .bleed-cap,.art-page .contain .bleed-cap{position:absolute;left:0;right:0;bottom:0;margin:0;padding:14cqw 7% 5%;color:#fff;background:linear-gradient(to top,rgb(0 0 0 / 55%),rgb(0 0 0 / 18%) 55%,transparent)}
+.art-page .full-bleed .bleed-cap,.art-page .contain .bleed-cap{position:absolute;left:0;right:0;bottom:0;max-height:36%;box-sizing:border-box;overflow:hidden;margin:0;padding:13cqw 7% 5%;color:#fff;background:linear-gradient(to top,rgb(0 0 0 / 82%),rgb(0 0 0 / 42%) 62%,transparent);display:flex;flex-direction:column;gap:1.2cqw}
+.art-page .bleed-cap strong{font:700 4.2cqw/1.05 var(--book-sans);letter-spacing:-.01em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.art-page .bleed-cap>span{font:600 1.9cqw/1.35 var(--book-sans);letter-spacing:.08em;text-transform:uppercase}
+.art-page .bleed-cap .photo-kicker{color:#ff5a36}
+.art-page .bleed-cap .photo-note{-webkit-line-clamp:2;text-transform:none;letter-spacing:.02em;font-weight:500}
 .art-page.bleed .folio{color:#fff;text-shadow:0 1px 2px rgb(0 0 0 / 45%);z-index:2}
 .art-page .feat-route{position:absolute;right:8%;bottom:11%;width:25%;opacity:1}
 .art-page .feat-route .route{width:100%;height:auto;display:block}
@@ -39,7 +46,7 @@ FEATURE_CSS = """
 /* The leaf shows alone, so give text more width for readability while keeping
    the same non-overlap invariant: text's right edge (70%) stays left of the
    route column's left edge (71%). Slightly larger type for small screens. */
-.book[data-layout="portrait"] .art-page .feature{left:10%;right:30%}
+.book[data-layout="portrait"] .art-page .feature{left:9%;right:30%;top:9%;bottom:8%}
 .book[data-layout="portrait"] .art-page .feat-route{right:5%;bottom:8%;width:24%}
 """
 
@@ -72,12 +79,16 @@ html,body,.room{background:#ffffff;color:var(--ink)}
 .art-page .colophon{font:500 2.6cqw/1.55 var(--book-sans)}
 .art-page .colophon p{margin:0 0 4cqw}
 .art-page .colophon p b{font-weight:700;font-size:1.5em}
+.art-page .year-stats{top:15%;max-height:76%;overflow:hidden}
+.art-page .year-stats p{margin:0 0 2.6cqw}
+.art-page .year-stats p:first-child{margin-bottom:4cqw}
 .art-page .colophon .small-print{font:500 1.8cqw/1.6 var(--book-sans);color:#8a8a8a}
 .art-page .feat-month{font:600 2.2cqw/1 var(--book-sans);letter-spacing:.28em;color:#111;text-transform:uppercase}
-.art-page .feat-title{font:700 8cqw/1.0 var(--book-sans);letter-spacing:-.02em;text-transform:uppercase}
+.art-page .feat-reason{align-self:flex-start;margin:0 0 3cqw;padding:.8cqw 1.4cqw;background:#ff5a36;color:#fff;font:700 1.6cqw/1 var(--book-sans);letter-spacing:.12em;text-transform:uppercase}
+.art-page .feat-title{font:700 7.2cqw/1.0 var(--book-sans);letter-spacing:-.02em;text-transform:uppercase}
 .art-page .feat-stats{font:500 2.5cqw/1.5 var(--book-sans);letter-spacing:.02em;color:#111}
 .art-page .feat-tags{font:600 2.6cqw/1.4 var(--book-sans);letter-spacing:.06em;color:#111;text-transform:uppercase}
-.art-page .feat-desc{font:500 3cqw/1.55 var(--book-sans);color:#111}
+.art-page .feat-desc{font:500 2.6cqw/1.48 var(--book-sans);color:#111}
 .art-page .companions .avatar{border:.4cqw solid #fff;box-shadow:0 0 0 .4cqw #111}
 .art-page .companions .avatar-fallback,.art-page .companions .avatar-more{background:#111;color:#fff;font:600 2.4cqw/1 var(--book-sans);letter-spacing:.02em}
 .art-page .companions-label{font:600 2.4cqw/1.3 var(--book-sans);letter-spacing:.06em;color:#111;text-transform:uppercase}

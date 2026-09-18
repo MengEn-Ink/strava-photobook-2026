@@ -10,7 +10,7 @@ import shutil
 from pathlib import Path
 
 from .config import Config
-from .model import Activity, by_year, select_highlights
+from .model import Activity, Highlight, by_year, select_editorial_highlights
 from .route import route_svg
 from .theme import FEATURE_CSS, THEME_CSS
 
@@ -25,6 +25,11 @@ def _fmt_time(seconds: int) -> str:
     h, rem = divmod(int(seconds or 0), 3600)
     m, s = divmod(rem, 60)
     return f"{h}:{m:02d}:{s:02d}" if h else f"{m}:{s:02d}"
+
+
+def _short(text: str, limit: int) -> str:
+    text = " ".join((text or "").split())
+    return text if len(text) <= limit else text[:limit - 1].rstrip() + "…"
 
 
 # ---- page renderers -------------------------------------------------------
@@ -54,13 +59,19 @@ def _title_page(year: str, stats: dict) -> str:
 def _stats_page(stats: dict) -> str:
     lines = "".join(f"<p><b>{v}</b> {k}</p>" for k, v in stats["lines"])
     return (f'<article class="book-page art-page paper verso" aria-label="Year in numbers">'
-            f'<div class="colophon"><p>年度数字</p>{lines}</div></article>')
+            f'<div class="colophon year-stats"><p>年度数字</p>{lines}</div></article>')
 
 
-def _photo_page(side: str, ph, folio: str) -> str:
-    cap = f'<figcaption class="bleed-cap">{_esc(ph.caption)}</figcaption>' if ph.caption else ""
+def _activity_photo_page(side: str, highlight: Highlight, ph, folio: str) -> str:
+    a = highlight.activity
+    original = f'<span class="photo-note">{_esc(_short(ph.caption, 90))}</span>' if ph.caption else ""
+    cap = (f'<figcaption class="bleed-cap"><span class="photo-kicker">{_esc(highlight.reason)}</span>'
+           f'<strong>{_esc(_short(a.name, 64))}</strong>'
+           f'<span>{_esc(a.date_label)} · {a.distance_km:.0f} km · 爬升 {a.elev_m:.0f} m</span>'
+           f'{original}</figcaption>')
     mode = "contain" if ph.landscape else "full-bleed"
-    return (f'<article class="book-page art-page bleed {side}" aria-label="photo">'
+    return (f'<article class="book-page art-page bleed {side}" data-activity-id="{_esc(a.id)}" '
+            f'aria-label="{_esc(_short(a.name, 40))} photo">'
             f'<figure class="{mode}"><img src="{ph.web_path}" alt="{_esc(ph.caption) or "ride photo"}">{cap}</figure>'
             f'<p class="folio">{folio}</p></article>')
 
@@ -81,7 +92,8 @@ def _companions(avatar: str | None, athlete_count: int) -> str:
             f'<span class="companions-label">与 {others} 位车友同行</span></div>')
 
 
-def _feature_page(side: str, a: Activity, avatar: str | None = None) -> str:
+def _feature_page(side: str, highlight: Highlight, avatar: str | None = None) -> str:
+    a = highlight.activity
     tags = []
     if a.kudos:
         tags.append(f"♥ {a.kudos}")
@@ -92,15 +104,16 @@ def _feature_page(side: str, a: Activity, avatar: str | None = None) -> str:
                  key=lambda p: p.get("elapsed_time") or 0)[:4]
     pr_html = ""
     if top:
-        items = "".join(f"<li>{_esc(p['name'])} — {_fmt_time(p['elapsed_time'])}</li>" for p in top)
+        items = "".join(f"<li>{_esc(_short(p['name'], 32))} — {_fmt_time(p['elapsed_time'])}</li>" for p in top)
         pr_html = f'<ul class="pr-list">{items}</ul>'
-    desc = f'<p class="feat-desc">{_esc(a.description)}</p>' if a.description else ""
+    desc = f'<p class="feat-desc">{_esc(_short(a.description, 180))}</p>' if a.description else ""
     companions = _companions(avatar, a.athlete_count)
     route = route_svg(a.polyline, stroke="#0a0a0a", stroke_width=2.6)
     route_html = f'<div class="feat-route">{route}</div>' if route else ""
-    return (f'<article class="book-page art-page paper {side}" aria-label="{_esc(a.name)[:40]}">'
-            f'<div class="feature"><p class="feat-month">{a.month_label}</p>'
-            f'<h3 class="feat-title">{_esc(a.name)}</h3>'
+    return (f'<article class="book-page art-page paper {side}" data-activity-id="{_esc(a.id)}" aria-label="{_esc(a.name)[:40]}">'
+            f'<div class="feature"><p class="feat-month">{a.date_label}</p>'
+            f'<p class="feat-reason">{_esc(highlight.reason)}</p>'
+            f'<h3 class="feat-title">{_esc(_short(a.name, 72))}</h3>'
             f'<p class="feat-stats">{a.distance_km:.0f} km · 爬升 {a.elev_m:.0f} m · '
             f'均速 {a.avg_speed_kmh:.1f} km/h · {_fmt_time(a.moving_time)}</p>'
             f'{tags_html}{desc}{companions}{pr_html}</div>{route_html}</article>')
@@ -207,7 +220,6 @@ def build_year(cfg: Config, year: str, activities: list[Activity], hydrate,
     out = cfg.book_dir(year)
     photos_dir = _copy_runtime(cfg, out)
     avatar = avatar_fetcher(photos_dir) if avatar_fetcher else None
-    hl = select_highlights(ya)
     stats = _stats(ya)
 
     pages = [_cover(year, "A Year of Cycling · Strava"),
@@ -217,29 +229,34 @@ def build_year(cfg: Config, year: str, activities: list[Activity], hydrate,
 
     side = ["recto", "verso"]
     used = 0
+    # Hydrate a bounded, photo-led shortlist so description and detail signals
+    # participate in final editorial ranking without exhausting API quota.
+    candidates = sorted(ya, key=lambda a: (a.photo_count > 0, a.kudos, a.pr_count), reverse=True)[:24]
+    for a in candidates:
+        hydrate(a, photos_dir, min(2, a.photo_count))
+    highlights = select_editorial_highlights(candidates, cfg.feature_rides)
     featured: set[str] = set()
 
-    # feature spreads: top-kudos rides. Companions are rendered from each ride's
-    # true athlete_count, which hydrate() corrects from the activity detail.
-    for i, a in enumerate(hl["top_kudos"][:cfg.feature_rides]):
+    for i, highlight in enumerate(highlights):
+        a = highlight.activity
         featured.add(a.id)
-        hydrate(a, photos_dir, 1 if a.photo_count else 0)
-        pages.append(_feature_page(side[i % 2], a, avatar))
+        pages.append(_feature_page(side[i % 2], highlight, avatar))
         if a.photos:
-            used += 1
-            pages.append(_photo_page(side[(i + 1) % 2], a.photos[0], str(i + 1)))
+            for ph in a.photos[:2]:
+                pages.append(_activity_photo_page(side[(i + 1) % 2], highlight, ph, str(used + 1)))
+                used += 1
 
     # gallery: remaining photo rides by kudos
     folio = cfg.feature_rides + 1
-    for a in sorted([x for x in hl["photo_acts"] if x.id not in featured],
-                    key=lambda x: x.kudos, reverse=True):
+    gallery = select_editorial_highlights([x for x in candidates if x.id not in featured], len(candidates))
+    for highlight in gallery:
+        a = highlight.activity
         if used >= cfg.photos_per_book:
             break
-        hydrate(a, photos_dir, min(2, cfg.photos_per_book - used))
         for ph in a.photos[:2]:
             if used >= cfg.photos_per_book:
                 break
-            pages.append(_photo_page(side[used % 2], ph, str(folio)))
+            pages.append(_activity_photo_page(side[used % 2], highlight, ph, str(folio)))
             used += 1
             folio += 1
 

@@ -81,6 +81,12 @@ def check(css: str) -> list[str]:
         if f"{sel}{{" not in css.replace(" ", "") and f".art-page {sel}" not in css:
             errors.append(f"缺少 {sel} 的排版样式")
 
+    compact = css.replace(" ", "")
+    for required in ("overflow:hidden", "-webkit-line-clamp:3", "-webkit-line-clamp:5",
+                     "max-height:36%", ".year-stats{", "max-height:76%"):
+        if required not in compact:
+            errors.append(f"缺少防溢出规则：{required}")
+
     return errors
 
 
