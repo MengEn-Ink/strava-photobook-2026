@@ -56,7 +56,6 @@
 .art-page .full-bleed .bleed-cap,.art-page .contain .bleed-cap{position:absolute;left:0;right:0;bottom:0;max-height:36%;box-sizing:border-box;overflow:hidden;margin:0;padding:13cqw 7% 5%;color:#fff;background:linear-gradient(to top,rgb(0 0 0 / 82%),rgb(0 0 0 / 42%) 62%,transparent);display:flex;flex-direction:column;gap:1.2cqw}
 .art-page .bleed-cap strong{font:700 4.2cqw/1.05 var(--book-sans);letter-spacing:-.01em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .art-page .bleed-cap>span{font:600 1.9cqw/1.35 var(--book-sans);letter-spacing:.08em;text-transform:uppercase}
-.art-page .bleed-cap .photo-kicker{color:var(--theme-accent)}
 .art-page .bleed-cap .photo-note{-webkit-line-clamp:2;text-transform:none;letter-spacing:.02em;font-weight:500}
 .art-page.bleed .folio{color:#fff;text-shadow:0 1px 2px rgb(0 0 0 / 45%);z-index:2}
 .art-page .feat-route{position:absolute;right:8%;bottom:11%;width:25%;opacity:1}
