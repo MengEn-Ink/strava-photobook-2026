@@ -11,7 +11,7 @@ from pathlib import Path
 
 from .config import Config
 from .model import Activity, Highlight, by_year, select_editorial_highlights
-from .route import route_svg
+from .route import route_heatmap_svg, route_svg
 from .theme import FEATURE_CSS, THEME_CSS
 
 PAGE_W, PAGE_H = 512, 640
@@ -81,6 +81,26 @@ def _stats_page(stats: dict) -> str:
     lines = "".join(f"<p><b>{v}</b> {k}</p>" for k, v in stats["lines"])
     return (f'<article class="book-page art-page paper verso" aria-label="Year in numbers">'
             f'<div class="colophon year-stats"><p>年度数字</p>{lines}</div></article>')
+
+
+def _heatmap_page(year: str, activities: list[Activity]) -> str:
+    routed = [activity for activity in activities if activity.polyline]
+    graphic = route_heatmap_svg([activity.polyline for activity in routed])
+    if not graphic:
+        return ""
+    months = len({activity.month_label for activity in routed if activity.month_label})
+    distance = sum(activity.distance_km for activity in routed)
+    return (
+        f'<article class="book-page art-page paper verso annual-heatmap" '
+        f'data-annual-heatmap="1" aria-label="{_esc(year)} 年度活动轨迹热力图">'
+        '<div class="heatmap-heading"><span>ANNUAL ROUTES</span><h2>年度轨迹</h2></div>'
+        f'<div class="heatmap-canvas">{graphic}</div>'
+        '<p class="heatmap-note">轨迹已按主要活动区域聚合</p>'
+        '<div class="heatmap-summary">'
+        f'<span><b>{len(routed)}</b> 次活动</span>'
+        f'<span><b>{int(distance + 0.5):,}</b> km</span>'
+        f'<span><b>{months}</b> 个活跃月份</span></div></article>'
+    )
 
 
 def _activity_photo_page(side: str, highlight: Highlight, ph, folio: str) -> str:
@@ -290,16 +310,19 @@ def _chronological_activity_blocks(
     )
 
 
-def _frame_pages(year: str, stats: dict, activity_pages: list[str]) -> list[str]:
+def _frame_pages(
+    year: str, stats: dict, activity_pages: list[str], activities: list[Activity] | None = None
+) -> list[str]:
     """Wrap meaningful content with covers without inserting blank leaves."""
-    return [
+    pages = [
         _cover(year, "A Year of Cycling · Strava"),
         _title_page(year, stats),
-        _stats_page(stats),
-        *activity_pages,
-        _colophon(year),
-        _back(year),
     ]
+    heatmap = _heatmap_page(year, activities or [])
+    if heatmap:
+        pages.append(heatmap)
+    pages.extend([_stats_page(stats), *activity_pages, _colophon(year), _back(year)])
+    return pages
 
 
 def build_year(cfg: Config, year: str, activities: list[Activity], hydrate,
@@ -342,7 +365,7 @@ def build_year(cfg: Config, year: str, activities: list[Activity], hydrate,
             activity_pages.append(_activity_photo_page(side[len(activity_pages) % 2], highlight, ph, str(used + 1)))
             used += 1
 
-    pages = _frame_pages(year, stats, activity_pages)
+    pages = _frame_pages(year, stats, activity_pages, ya)
     (out / "index.html").write_text(_document(year, "\n        ".join(pages)), encoding="utf-8")
     print(f"built {out}  pages={len(pages)} photos={used}")
     return out

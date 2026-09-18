@@ -23,6 +23,8 @@
 
 顶栏“主题”中有默认黑白橙和 18 组撞色，共 19 种主题。点击色板立即切换，不会跳页；选择会自动保存，下次打开仍然生效。要恢复默认，重新选择“黑白橙（默认）”。如果需要彻底清除偏好，可在浏览器开发者工具的 Local Storage 中删除 `strava-photobook.theme`。
 
+封面后的首个跨页包含年度活动热力图。它直接使用 Strava GPS 轨迹，不需要地图服务或额外密钥；重复经过的路线会更深，颜色也会跟随当前主题。异地活动不会把主要骑行区域压缩成角落，页面会优先展示最密集的活动区域。
+
 ## 5. 授权 GitHub
 
 运行 `python3 -m strava_photobook github-auth`。若已安装 GitHub CLI，终端会显示一次性验证码并打开浏览器。若没有，可创建 GitHub OAuth App、启用 Device Flow，并在 `.env` 设置 `GITHUB_CLIENT_ID`。预期终端显示授权成功并保存 `GITHUB_TOKEN`；不要复制或提交 token。

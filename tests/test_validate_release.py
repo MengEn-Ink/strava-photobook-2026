@@ -5,7 +5,7 @@ from pathlib import Path
 from tools.validate_release import ValidationError, validate_release
 
 
-def write_book(root: Path, photo_count: int, *, extras: str = "") -> Path:
+def write_book(root: Path, photo_count: int, *, extras: str = "", heatmap: bool = True) -> Path:
     book = root / "book"
     photos = book / "assets" / "photos"
     photos.mkdir(parents=True)
@@ -16,6 +16,7 @@ def write_book(root: Path, photo_count: int, *, extras: str = "") -> Path:
         tags.append(f'<img src="assets/photos/{name}">')
     (book / "index.html").write_text(
         '<html data-strava-photobook="1"><nav id="month-timeline"></nav>'
+        + ('<article data-annual-heatmap="1"></article>' if heatmap else '')
         + "".join(tags) + extras + "</html>",
         encoding="utf-8",
     )
@@ -51,6 +52,12 @@ class ReleaseValidationTests(unittest.TestCase):
             self.assertIn("blank endpaper", message)
             self.assertIn("internal folio", message)
             self.assertIn("missing asset", message)
+
+    def test_rejects_missing_annual_heatmap_when_routes_are_expected(self):
+        with tempfile.TemporaryDirectory() as raw:
+            candidate = write_book(Path(raw), 1, heatmap=False)
+            with self.assertRaisesRegex(ValidationError, "missing annual heatmap"):
+                validate_release(candidate, require_heatmap=True)
 
 
 if __name__ == "__main__":

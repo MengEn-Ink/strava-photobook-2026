@@ -18,7 +18,9 @@ def _inspect(book: Path) -> tuple[str, list[str]]:
     return html, re.findall(r'<img\b[^>]*\bsrc="([^"]+)"', html)
 
 
-def validate_release(book: Path, baseline: Path | None = None) -> dict[str, int]:
+def validate_release(
+    book: Path, baseline: Path | None = None, *, require_heatmap: bool = False
+) -> dict[str, int]:
     book = Path(book)
     html, images = _inspect(book)
     errors: list[str] = []
@@ -26,6 +28,8 @@ def validate_release(book: Path, baseline: Path | None = None) -> dict[str, int]
         errors.append("missing photobook marker")
     if 'id="month-timeline"' not in html:
         errors.append("missing month timeline")
+    if require_heatmap and 'data-annual-heatmap="1"' not in html:
+        errors.append("missing annual heatmap")
     if "endpaper" in html:
         errors.append("blank endpaper present")
     if 'class="folio"' in html:
@@ -54,8 +58,9 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("book", type=Path)
     parser.add_argument("--baseline", type=Path)
+    parser.add_argument("--require-heatmap", action="store_true")
     args = parser.parse_args()
-    result = validate_release(args.book, args.baseline)
+    result = validate_release(args.book, args.baseline, require_heatmap=args.require_heatmap)
     print(f"release valid: photos={result['photos']} baseline={result['baseline_photos']}")
 
 

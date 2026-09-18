@@ -15,8 +15,10 @@ class NightlyWorkflowTests(unittest.TestCase):
             "STRAVA_REFRESH_TOKEN",
             "SECRETS_ADMIN_TOKEN",
             "Retry Strava fetch after rate limit",
+            "900 - $(date +%s) % 900 + 60",
             "if: always()",
             "tools/validate_release.py",
+            "--require-heatmap",
             "refs/heads/gh-pages",
         ):
             self.assertIn(token, text)

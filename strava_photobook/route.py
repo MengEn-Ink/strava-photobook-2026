@@ -32,6 +32,90 @@ def decode_polyline(encoded: str) -> list[tuple[float, float]]:
     return points
 
 
+def _project_routes(
+    routes: list[list[tuple[float, float]]], *, size: int, pad: float
+) -> list[list[tuple[float, float]]]:
+    """Project several routes into one shared, north-up square canvas."""
+    import math
+
+    points = [point for route in routes for point in route]
+    lat0 = sum(point[0] for point in points) / len(points)
+    kx = math.cos(math.radians(lat0))
+    projected = [[(lng * kx, lat) for lat, lng in route] for route in routes]
+    xs = [point[0] for route in projected for point in route]
+    ys = [point[1] for route in projected for point in route]
+    min_x, max_x = min(xs), max(xs)
+    min_y, max_y = min(ys), max(ys)
+    span_x = (max_x - min_x) or 1e-9
+    span_y = (max_y - min_y) or 1e-9
+    span = max(span_x, span_y)
+    inner = size - 2 * pad
+    off_x = pad + (inner - inner * span_x / span) / 2
+    off_y = pad + (inner - inner * span_y / span) / 2
+
+    def project(x: float, y: float) -> tuple[float, float]:
+        return (
+            round(off_x + (x - min_x) / span * inner, 1),
+            round(off_y + (max_y - y) / span * inner, 1),
+        )
+
+    return [[project(x, y) for x, y in route] for route in projected]
+
+
+def route_heatmap_svg(encoded_routes: list[str], *, size: int = 100, pad: float = 5.0) -> str:
+    """Render valid activity routes together; overlapping strokes accumulate heat."""
+    routes: list[list[tuple[float, float]]] = []
+    for encoded in encoded_routes:
+        try:
+            points = decode_polyline(encoded) if encoded else []
+        except (IndexError, TypeError, ValueError):
+            continue
+        if len(points) >= 2:
+            # A bounded point count keeps a full season's inline SVG compact.
+            stride = max(1, (len(points) + 178) // 179)
+            sampled = points[::stride]
+            if sampled[-1] != points[-1]:
+                sampled.append(points[-1])
+            routes.append(sampled)
+    if not routes:
+        return ""
+
+    # Keep the densest geographic region legible. A single trip thousands of
+    # kilometres away would otherwise collapse the rider's everyday network.
+    clusters: list[list[list[tuple[float, float]]]] = []
+    for route in routes:
+        centre = (
+            sum(point[0] for point in route) / len(route),
+            sum(point[1] for point in route) / len(route),
+        )
+        for cluster in clusters:
+            anchor = cluster[0]
+            anchor_centre = (
+                sum(point[0] for point in anchor) / len(anchor),
+                sum(point[1] for point in anchor) / len(anchor),
+            )
+            if abs(centre[0] - anchor_centre[0]) <= 5 and abs(centre[1] - anchor_centre[1]) <= 5:
+                cluster.append(route)
+                break
+        else:
+            clusters.append([route])
+    plotted = max(clusters, key=len)
+    remote_count = len(routes) - len(plotted)
+
+    paths = []
+    for points in _project_routes(plotted, size=size, pad=pad):
+        d = "M" + " L".join(f"{x},{y}" for x, y in points)
+        paths.append(f'<path class="heat-route base" d="{d}"/>')
+        paths.append(f'<path class="heat-route hot" d="{d}"/>')
+    return (
+        f'<svg class="route-heatmap" viewBox="0 0 {size} {size}" fill="none" '
+        f'data-plotted-routes="{len(plotted)}" data-remote-routes="{remote_count}" '
+        'xmlns="http://www.w3.org/2000/svg" aria-hidden="true" '
+        'style="color:var(--theme-primary);--heat:var(--theme-accent)">'
+        + "".join(paths) + "</svg>"
+    )
+
+
 def route_svg(
     encoded: str,
     *,

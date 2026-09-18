@@ -74,7 +74,10 @@ jobs:
       - name: Retry Strava fetch after rate limit
         if: steps.fetch.outcome == 'failure'
         run: |
-          sleep 960
+          # Strava resets its short-term quota on fixed 15-minute UTC boundaries.
+          wait_seconds=$((900 - $(date +%s) % 900 + 60))
+          echo "Waiting ${wait_seconds}s for the next Strava quota window"
+          sleep "$wait_seconds"
           python -m strava_photobook fetch
 
       - name: Persist refresh token after retry
@@ -97,7 +100,7 @@ jobs:
           node --test runtime/*.test.mjs
           node --test "books/$BOOK_YEAR/html-contract.test.mjs"
           python -m tools.layout_gate
-          python tools/validate_release.py "books/$BOOK_YEAR" --baseline "$PREVIOUS_BOOK"
+          python tools/validate_release.py "books/$BOOK_YEAR" --baseline "$PREVIOUS_BOOK" --require-heatmap
 
       - name: Publish gh-pages atomically
         env:

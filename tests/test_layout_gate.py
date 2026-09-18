@@ -38,6 +38,14 @@ class LayoutContractTests(unittest.TestCase):
             self.assertIn(selector, css)
         self.assertNotIn(".photo-kicker{", css)
 
+    def test_annual_heatmap_stays_in_safe_bounds_and_uses_theme_colors(self):
+        css = THEME_CSS.replace(" ", "")
+        for selector in (".annual-heatmap{", ".heatmap-canvas{", ".heatmap-summary{"):
+            self.assertIn(selector, css)
+        self.assertIn("overflow:hidden", css)
+        self.assertIn("var(--theme-primary)", css)
+        self.assertIn("var(--theme-accent)", css)
+
 
 if __name__ == "__main__":
     unittest.main()

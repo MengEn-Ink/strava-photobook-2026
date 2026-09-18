@@ -1,7 +1,9 @@
 import unittest
 
 from strava_photobook import book
-from strava_photobook.book import _activity_photo_page, _document, _feature_page, _frame_pages
+from strava_photobook.book import (
+    _activity_photo_page, _document, _feature_page, _frame_pages, _heatmap_page,
+)
 from strava_photobook.model import Activity, Highlight, Photo
 
 
@@ -57,6 +59,34 @@ class BookRenderingTests(unittest.TestCase):
         self.assertEqual(len(pages), 6)
         self.assertNotIn("endpaper", rendered)
         self.assertEqual(rendered.count('data-density="hard"'), 2)
+
+    def test_heatmap_page_aggregates_routes_and_compact_year_metrics(self):
+        demo = "_p~iF~ps|U_ulLnnqC_mqNvxq`@"
+        rides = [
+            Activity(id="jan", name="January", date="2026-01-02T08:00:00Z", year="2026", distance_km=12.4, polyline=demo),
+            Activity(id="mar", name="March", date="2026-03-02T08:00:00Z", year="2026", distance_km=20.1, polyline=demo),
+        ]
+
+        rendered = _heatmap_page("2026", rides)
+
+        self.assertIn('data-annual-heatmap="1"', rendered)
+        self.assertIn("年度轨迹", rendered)
+        self.assertIn('<b>2</b> 次活动', rendered)
+        self.assertIn('<b>33</b> km', rendered)
+        self.assertIn('<b>2</b> 个活跃月份', rendered)
+        self.assertEqual(rendered.count('class="heat-route hot"'), 2)
+        self.assertIn("轨迹已按主要活动区域聚合", rendered)
+
+    def test_heatmap_is_after_title_and_omitted_without_routes(self):
+        stats = {"rides": 1, "km": 10, "elev": 20, "lines": []}
+        ride = Activity(id="plain", name="No GPS", date="2026-01-02T08:00:00Z", year="2026")
+        pages = _frame_pages("2026", stats, ["activity"], [ride])
+        self.assertNotIn("annual-heatmap", "".join(pages))
+
+        ride.polyline = "_p~iF~ps|U_ulLnnqC_mqNvxq`@"
+        pages = _frame_pages("2026", stats, ["activity"], [ride])
+        self.assertIn('data-annual-heatmap="1"', pages[2])
+        self.assertIn("Year in numbers", pages[3])
 
     def test_long_feature_copy_is_bounded_before_render(self):
         rendered = _feature_page("recto", self.highlight)
