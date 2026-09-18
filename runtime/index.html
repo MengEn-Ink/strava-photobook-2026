@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en" data-strava-photobook="1">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Book title</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="room">
+  <header class="book-header">
+    <span>Photographs</span><h1>Book title</h1><span id="orientation">Open spread</span>
+  </header>
+  <section class="stage" aria-label="Interactive photo book">
+    <div class="book-rig">
+      <div id="book" class="book" data-page-width="512" data-page-height="640">
+        <article class="book-page art-page cloth recto" data-density="hard" aria-label="Front cover">
+          <h2 class="cover-title">Book title</h2><p class="cover-subtitle">Photographs</p>
+        </article>
+        <article class="book-page art-page endpaper verso" aria-label="Page 1"></article>
+        <article class="book-page art-page paper recto" aria-label="Page 2">
+          <div class="title-block"><h2>Book title</h2><p>Photographs</p></div>
+        </article>
+        <article class="book-page art-page paper verso" aria-label="Page 3"></article>
+        <article class="book-page art-page paper recto" aria-label="Page 4">
+          <figure class="plate medium"><!-- Insert a user photograph with descriptive alt text. --></figure>
+        </article>
+        <article class="book-page art-page paper verso" aria-label="Page 5">
+          <div class="colophon"><p>Book title</p><p>Photographs and credits</p></div>
+        </article>
+        <article class="book-page art-page endpaper recto" aria-label="Page 6"></article>
+        <article class="book-page art-page cloth verso" data-density="hard" aria-label="Back cover">
+          <span class="back-mark">Book title</span>
+        </article>
+      </div>
+    </div>
+  </section>
+  <footer class="controls" aria-label="Book controls">
+    <button id="previous" type="button" aria-label="Previous page">←</button>
+    <div class="status" aria-live="polite"><span id="page-status">Cover</span><small>Drag or use arrow keys</small></div>
+    <button id="next" type="button" aria-label="Next page">→</button>
+  </footer>
+</main>
+<script src="vendor/page-flip.browser.js"></script>
+<script src="flipbook.js"></script>
+</body>
+</html>

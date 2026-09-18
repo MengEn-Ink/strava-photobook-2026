@@ -1,0 +1,91 @@
+"""画册样式：介绍页布局补充 + Pas Normal Studios 风格主题。
+
+`FEATURE_CSS` 追加到运行时的 book-style.css（介绍页布局、满屏/留边照片、轨迹图形）。
+`THEME_CSS` 写成独立的 theme.css 并最后加载，因此换风格无需改动共享运行时。
+"""
+from __future__ import annotations
+
+# Layout additions the runtime doesn't ship (feature pages, bleed photos, route).
+FEATURE_CSS = """
+/* strava-photobook feature-page additions */
+/* text flows in a left column; the route glyph owns the bottom-right corner,
+   so the two never share an x-band and cannot overlap regardless of length. */
+.art-page .feature{position:absolute;left:12%;right:37%;top:15%}
+.art-page .feat-month{margin:0 0 3cqw}
+.art-page .feat-title{margin:0 0 3.5cqw}
+.art-page .feat-stats{margin:0 0 2cqw}
+.art-page .feat-tags{margin:0 0 4cqw}
+.art-page .feat-desc{margin:0 0 4cqw}
+.art-page .pr-list{list-style:none;padding:0;margin:0;padding-top:3cqw}
+.art-page .pr-list li{display:flex;justify-content:space-between;gap:2cqw}
+.art-page .pr-list li::before{align-self:center}
+/* full-bleed photo pages: image fills the whole leaf */
+.art-page.bleed{background:#111}
+.art-page .full-bleed{position:absolute;inset:0;margin:0;overflow:hidden}
+.art-page .full-bleed img{width:100%;height:100%;object-fit:cover;object-position:center}
+/* landscape photos: shown whole, letterboxed so nothing is cropped */
+.art-page .contain{position:absolute;inset:0;margin:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.art-page .contain img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+.art-page .full-bleed .bleed-cap,.art-page .contain .bleed-cap{position:absolute;left:0;right:0;bottom:0;margin:0;padding:14cqw 7% 5%;color:#fff;background:linear-gradient(to top,rgb(0 0 0 / 55%),rgb(0 0 0 / 18%) 55%,transparent)}
+.art-page.bleed .folio{color:#fff;text-shadow:0 1px 2px rgb(0 0 0 / 45%);z-index:2}
+.art-page .feat-route{position:absolute;right:8%;bottom:11%;width:25%;opacity:1}
+.art-page .feat-route .route{width:100%;height:auto;display:block}
+/* companions row: athlete avatar + "+N" badge */
+.art-page .companions{display:flex;align-items:center;gap:2.5cqw;margin:0 0 4cqw}
+.art-page .companions .avatars{display:flex}
+.art-page .companions .avatar{width:7cqw;height:7cqw;border-radius:50%;object-fit:cover;display:flex;align-items:center;justify-content:center;flex:none}
+.art-page .companions .avatar + .avatar{margin-left:-2.2cqw}
+/* --- portrait / single-page (phones) --- */
+/* The leaf shows alone, so give text more width for readability while keeping
+   the same non-overlap invariant: text's right edge (70%) stays left of the
+   route column's left edge (71%). Slightly larger type for small screens. */
+.book[data-layout="portrait"] .art-page .feature{left:10%;right:30%}
+.book[data-layout="portrait"] .art-page .feat-route{right:5%;bottom:8%;width:24%}
+"""
+
+# Pas Normal Studios-inspired: black & white, geometric sans, uppercase + wide
+# tracking, big type, generous whitespace.
+THEME_CSS = """
+/* ===== Strava Photobook · Pas Normal Studios-inspired theme ===== */
+:root{
+  --paper:#ffffff; --ink:#0a0a0a; --cloth:#0a0a0a;
+  --book-serif:"Helvetica Neue",Inter,"PingFang SC","Hiragino Sans GB",Arial,sans-serif;
+  --book-sans:"Helvetica Neue",Inter,Arial,sans-serif;
+}
+html,body,.room{background:#ffffff;color:var(--ink)}
+.art-page{background:#ffffff !important}
+.art-page.endpaper{background:#f2f2f2 !important}
+.art-page.cloth{background:#0a0a0a !important;color:#fff}
+.book{filter:drop-shadow(0 10px 24px rgb(0 0 0 / 18%))}
+.book-header h1{font:600 18px/1.2 var(--book-sans);letter-spacing:.14em;text-transform:uppercase}
+.book-header a,.book-header span{font:500 10px/1.4 var(--book-sans);letter-spacing:.18em;text-transform:uppercase;color:#111}
+.controls button{border:1px solid #111;border-radius:0;background:#fff;color:#111}
+.controls button:hover:not(:disabled){background:#111;color:#fff}
+.status span{font:600 10px/1.4 var(--book-sans);letter-spacing:.22em;text-transform:uppercase;color:#111}
+.status small{font:500 9px/1.4 var(--book-sans);letter-spacing:.12em;text-transform:uppercase;color:#8a8a8a}
+.art-page .cover-title{font:700 20cqw/.9 var(--book-sans);letter-spacing:-.02em;text-shadow:none;color:#fff}
+.art-page .cover-subtitle{font:600 2.4cqw/1.4 var(--book-sans);letter-spacing:.28em;text-transform:uppercase;color:#e8e8e8}
+.art-page .back-mark{font:600 2.6cqw/1.4 var(--book-sans);letter-spacing:.24em;text-transform:uppercase;color:#fff}
+.art-page .title-block{top:22%}
+.art-page .title-block h2{font:700 8.5cqw/1.02 var(--book-sans);letter-spacing:-.02em;text-transform:uppercase;margin:0 0 5cqw}
+.art-page .title-block p{font:500 2.6cqw/1.5 var(--book-sans);letter-spacing:.04em}
+.art-page .colophon{font:500 2.6cqw/1.55 var(--book-sans)}
+.art-page .colophon p{margin:0 0 4cqw}
+.art-page .colophon p b{font-weight:700;font-size:1.5em}
+.art-page .colophon .small-print{font:500 1.8cqw/1.6 var(--book-sans);color:#8a8a8a}
+.art-page .feat-month{font:600 2.2cqw/1 var(--book-sans);letter-spacing:.28em;color:#111;text-transform:uppercase}
+.art-page .feat-title{font:700 8cqw/1.0 var(--book-sans);letter-spacing:-.02em;text-transform:uppercase}
+.art-page .feat-stats{font:500 2.5cqw/1.5 var(--book-sans);letter-spacing:.02em;color:#111}
+.art-page .feat-tags{font:600 2.6cqw/1.4 var(--book-sans);letter-spacing:.06em;color:#111;text-transform:uppercase}
+.art-page .feat-desc{font:500 3cqw/1.55 var(--book-sans);color:#111}
+.art-page .companions .avatar{border:.4cqw solid #fff;box-shadow:0 0 0 .4cqw #111}
+.art-page .companions .avatar-fallback,.art-page .companions .avatar-more{background:#111;color:#fff;font:600 2.4cqw/1 var(--book-sans);letter-spacing:.02em}
+.art-page .companions-label{font:600 2.4cqw/1.3 var(--book-sans);letter-spacing:.06em;color:#111;text-transform:uppercase}
+.art-page .pr-list{border-top:1px solid #111}
+.art-page .pr-list li{font:500 2.3cqw/1.7 var(--book-sans);color:#111}
+.art-page .pr-list li::before{content:"PR";font:600 1.6cqw var(--book-sans);letter-spacing:.1em;color:#8a8a8a}
+.folio{font:600 1.7cqw/1 var(--book-sans);letter-spacing:.1em;color:#111}
+.art-page .feat-route .route path{stroke:#c2c2c2}
+.art-page .feat-route .route circle{fill:#9a9a9a}
+.art-page .bleed-cap{font:600 2.2cqw/1.35 var(--book-sans);letter-spacing:.14em;text-transform:uppercase}
+"""

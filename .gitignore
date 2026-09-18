@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 密钥与凭证
+.env
+*.token.json
+.strava_token.json
+
+# 缓存的 API 数据与生成的画册（含个人数据）
+data/
+books/
+
+# Node（运行时契约测试）
+node_modules/
+
+# 系统
+.DS_Store
