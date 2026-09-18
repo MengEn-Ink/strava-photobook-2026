@@ -86,8 +86,7 @@ def _stats_page(stats: dict) -> str:
 def _activity_photo_page(side: str, highlight: Highlight, ph, folio: str) -> str:
     a = highlight.activity
     original = f'<span class="photo-note">{_esc(_short(ph.caption, 90))}</span>' if ph.caption else ""
-    cap = (f'<figcaption class="bleed-cap"><span class="photo-kicker">{_esc(highlight.reason)}</span>'
-           f'<strong>{_esc(_short(a.name, 64))}</strong>'
+    cap = (f'<figcaption class="bleed-cap"><strong>{_esc(_short(a.name, 64))}</strong>'
            f'<span>{_esc(a.date_label)} · {a.distance_km:.0f} km · 爬升 {a.elev_m:.0f} m</span>'
            f'{original}</figcaption>')
     mode = "contain" if ph.landscape else "full-bleed"
@@ -259,6 +258,21 @@ def _stats(acts: list[Activity]) -> dict:
     }
 
 
+def _chronological_activity_blocks(
+    featured: list[Highlight], gallery: list[Highlight]
+) -> list[tuple[Highlight, bool]]:
+    """Merge selected activities into one date-ordered, de-duplicated timeline."""
+    blocks: dict[str, tuple[Highlight, bool]] = {}
+    for highlight in gallery:
+        blocks.setdefault(highlight.activity.id, (highlight, False))
+    for highlight in featured:
+        blocks[highlight.activity.id] = (highlight, True)
+    return sorted(
+        blocks.values(),
+        key=lambda item: (item[0].activity.date, item[0].activity.id),
+    )
+
+
 def build_year(cfg: Config, year: str, activities: list[Activity], hydrate,
                avatar_fetcher=None) -> Path:
     """Build the book for `year`. `hydrate(act, photos_dir, remaining)` fills photos+PRs.
@@ -288,30 +302,19 @@ def build_year(cfg: Config, year: str, activities: list[Activity], hydrate,
     for a in candidates:
         hydrate(a, photos_dir, min(2, a.photo_count))
     highlights = select_editorial_highlights(candidates, cfg.feature_rides)
-    featured: set[str] = set()
-
-    for i, highlight in enumerate(highlights):
+    featured_ids = {highlight.activity.id for highlight in highlights}
+    gallery = select_editorial_highlights(
+        [x for x in candidates if x.id not in featured_ids], len(candidates)
+    )
+    for highlight, is_featured in _chronological_activity_blocks(highlights, gallery):
         a = highlight.activity
-        featured.add(a.id)
-        pages.append(_feature_page(side[i % 2], highlight, avatar))
-        if a.photos:
-            for ph in a.photos[:2]:
-                pages.append(_activity_photo_page(side[(i + 1) % 2], highlight, ph, str(used + 1)))
-                used += 1
-
-    # gallery: remaining photo rides by kudos
-    folio = cfg.feature_rides + 1
-    gallery = select_editorial_highlights([x for x in candidates if x.id not in featured], len(candidates))
-    for highlight in gallery:
-        a = highlight.activity
-        if used >= cfg.photos_per_book:
-            break
+        if is_featured:
+            pages.append(_feature_page(side[len(pages) % 2], highlight, avatar))
         for ph in a.photos[:2]:
             if used >= cfg.photos_per_book:
                 break
-            pages.append(_activity_photo_page(side[used % 2], highlight, ph, str(folio)))
+            pages.append(_activity_photo_page(side[len(pages) % 2], highlight, ph, str(used + 1)))
             used += 1
-            folio += 1
 
     pages += [_colophon(year), _blank("back endpaper"), _back(year)]
     (out / "index.html").write_text(_document(year, "\n        ".join(pages)), encoding="utf-8")

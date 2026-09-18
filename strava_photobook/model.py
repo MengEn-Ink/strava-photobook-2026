@@ -123,8 +123,6 @@ def _editorial_score(a: Activity) -> float:
 
 
 def _highlight_reason(a: Activity) -> str:
-    if a.photo_count and clean_description(a.description):
-        return "照片与骑行故事完整"
     if a.pr_count >= 5:
         return "年度 PR 高光"
     if a.kudos >= 50:

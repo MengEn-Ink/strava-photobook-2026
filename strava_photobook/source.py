@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 from PIL import Image, ImageOps
@@ -92,6 +93,22 @@ def _save_photo(raw: bytes, dest: Path, max_edge: int) -> bool | None:
         return None
 
 
+def _cached_photos(cfg: Config, act: Activity, photos_dir: Path, limit: int) -> list[Photo]:
+    cache_dir = cfg.data_dir / "photo-cache"
+    cached: list[Photo] = []
+    for source in sorted(cache_dir.glob(f"{act.id}-*.jpg"))[:limit]:
+        dest = photos_dir / source.name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, dest)
+        try:
+            with Image.open(source) as image:
+                landscape = image.width >= image.height * 1.15
+        except Exception:  # noqa: BLE001
+            continue
+        cached.append(Photo(f"assets/photos/{source.name}", landscape=landscape))
+    return cached
+
+
 def hydrate_activity(cfg: Config, client: StravaClient, act: Activity,
                      photos_dir: Path, max_photos: int) -> None:
     """Download an activity's photos, pull PR segments and refresh companions.
@@ -149,6 +166,11 @@ def hydrate_activity(cfg: Config, client: StravaClient, act: Activity,
                     landscape=landscape,
                 )
             )
+            cache = cfg.data_dir / "photo-cache" / name
+            cache.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(photos_dir / name, cache)
+        if not act.photos:
+            act.photos.extend(_cached_photos(cfg, act, photos_dir, max_photos))
 
 
 def make_client(cfg: Config) -> StravaClient:

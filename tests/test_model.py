@@ -13,7 +13,7 @@ class EditorialSelectionTests(unittest.TestCase):
         story = ride("2", "Mountain Story", 2, kudos=52, photo_count=5, description="A memorable mountain day", pr_count=3)
         selected = select_editorial_highlights([bare, story], limit=1)
         self.assertEqual(selected[0].activity.id, "2")
-        self.assertIn("照片", selected[0].reason)
+        self.assertEqual(selected[0].reason, "年度最多点赞")
 
     def test_selection_spreads_months_and_repeated_titles(self):
         rides = [
