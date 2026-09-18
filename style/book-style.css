@@ -1,0 +1,67 @@
+:root{--paper:#f7f6f0;--ink:#292c26;--cloth:#7d8572;--book-serif:Georgia,"Songti SC","Noto Serif CJK SC",serif;--book-sans:Arial,Helvetica,sans-serif}
+.art-page{container-type:inline-size;position:relative;aspect-ratio:var(--page-ratio, .8);overflow:hidden;background:var(--paper);color:var(--ink);font-family:var(--book-serif);font-weight:400}
+.art-page img{display:block;object-fit:contain;filter:none;border:0;border-radius:0;box-shadow:none}
+.art-page .plate{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:74%;height:72%;margin:0;display:flex;align-items:center;justify-content:center}
+.art-page .plate img{width:100%;height:100%;object-fit:contain}
+.art-page .plate.small{width:49%;height:53%}
+.art-page .plate.medium{width:68%;height:65%}
+.art-page .plate.large{width:86%;height:82%}
+.art-page .plate.portrait{width:67%;height:66%}
+.art-page .plate.high{top:40%}
+.art-page .plate.low{top:55%}
+.art-page .plate.aside{left:55%}
+.art-page .folio{position:absolute;bottom:4.7%;right:7.7%;margin:0;color:#73766c;font:400 1.5cqw/1 var(--book-serif);letter-spacing:0;text-transform:none}
+.art-page.verso .folio{left:7.7%;right:auto}
+.art-page.endpaper{background-color:#e9e9dc}
+.art-page.cloth{background:var(--cloth);color:#f2efdf}
+.art-page .cover-title{position:absolute;left:13.5%;right:10%;top:15%;margin:0;font:400 7.2cqw/1.12 var(--book-serif);letter-spacing:-.02em;text-shadow:0 1px 0 rgb(29 39 25 / 12%)}
+.art-page .cover-subtitle{position:absolute;left:13.5%;top:33%;font:400 2.1cqw/1.4 var(--book-serif);margin:0;letter-spacing:.025em}
+.art-page .cover-plate{position:absolute;left:13.5%;bottom:18%;width:52%;margin:0;box-shadow:0 1px 1px rgb(24 33 20 / 18%)}
+.art-page .cover-plate img{width:100%;height:auto}
+.art-page .cover-foot{position:absolute;bottom:7%;left:13.5%;font:400 1.6cqw/1.4 var(--book-sans);letter-spacing:.13em}
+.art-page .title-block{position:absolute;top:26%;left:16%;right:12%}
+.art-page .title-block h2{font:400 4.5cqw/1.2 var(--book-serif);letter-spacing:-.01em;margin:0 0 6cqw}
+.art-page .title-block p{font:400 2.1cqw/1.6 var(--book-serif);margin:0}
+.art-page .colophon{position:absolute;left:16%;right:18%;top:52%;font:400 2.2cqw/1.55 var(--book-serif)}
+.art-page .colophon p{margin:0 0 4cqw}
+.art-page .colophon .small-print{font:400 1.7cqw/1.65 var(--book-sans);color:#6f7268}
+.art-page .back-mark{position:absolute;bottom:10%;left:13.5%;font:400 2cqw/1.4 var(--book-serif)}
+/* The material is a background, so it never changes the photograph's pixels. */
+.book-page.art-page::after{content:none}
+.book-page.art-page.--left::before{background:linear-gradient(to left,rgb(28 30 24 / 12%),rgb(28 30 24 / 3%) 40%,transparent)}
+.book-page.art-page.--right::before{background:linear-gradient(to right,rgb(28 30 24 / 12%),rgb(28 30 24 / 3%) 40%,transparent)}
+
+/* strava-photobook feature-page additions */
+/* text flows in a left column; the route glyph owns the bottom-right corner,
+   so the two never share an x-band and cannot overlap regardless of length. */
+.art-page .feature{position:absolute;left:12%;right:37%;top:15%}
+.art-page .feat-month{margin:0 0 3cqw}
+.art-page .feat-title{margin:0 0 3.5cqw}
+.art-page .feat-stats{margin:0 0 2cqw}
+.art-page .feat-tags{margin:0 0 4cqw}
+.art-page .feat-desc{margin:0 0 4cqw}
+.art-page .pr-list{list-style:none;padding:0;margin:0;padding-top:3cqw}
+.art-page .pr-list li{display:flex;justify-content:space-between;gap:2cqw}
+.art-page .pr-list li::before{align-self:center}
+/* full-bleed photo pages: image fills the whole leaf */
+.art-page.bleed{background:#111}
+.art-page .full-bleed{position:absolute;inset:0;margin:0;overflow:hidden}
+.art-page .full-bleed img{width:100%;height:100%;object-fit:cover;object-position:center}
+/* landscape photos: shown whole, letterboxed so nothing is cropped */
+.art-page .contain{position:absolute;inset:0;margin:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.art-page .contain img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+.art-page .full-bleed .bleed-cap,.art-page .contain .bleed-cap{position:absolute;left:0;right:0;bottom:0;margin:0;padding:14cqw 7% 5%;color:#fff;background:linear-gradient(to top,rgb(0 0 0 / 55%),rgb(0 0 0 / 18%) 55%,transparent)}
+.art-page.bleed .folio{color:#fff;text-shadow:0 1px 2px rgb(0 0 0 / 45%);z-index:2}
+.art-page .feat-route{position:absolute;right:8%;bottom:11%;width:25%;opacity:1}
+.art-page .feat-route .route{width:100%;height:auto;display:block}
+/* companions row: athlete avatar + "+N" badge */
+.art-page .companions{display:flex;align-items:center;gap:2.5cqw;margin:0 0 4cqw}
+.art-page .companions .avatars{display:flex}
+.art-page .companions .avatar{width:7cqw;height:7cqw;border-radius:50%;object-fit:cover;display:flex;align-items:center;justify-content:center;flex:none}
+.art-page .companions .avatar + .avatar{margin-left:-2.2cqw}
+/* --- portrait / single-page (phones) --- */
+/* The leaf shows alone, so give text more width for readability while keeping
+   the same non-overlap invariant: text's right edge (70%) stays left of the
+   route column's left edge (71%). Slightly larger type for small screens. */
+.book[data-layout="portrait"] .art-page .feature{left:10%;right:30%}
+.book[data-layout="portrait"] .art-page .feat-route{right:5%;bottom:8%;width:24%}
