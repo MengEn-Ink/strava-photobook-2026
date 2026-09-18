@@ -14,9 +14,10 @@ class LayoutContractTests(unittest.TestCase):
 
     def test_landscape_photos_share_a_fixed_image_band(self):
         css = FEATURE_CSS.replace(" ", "")
-        self.assertIn(".art-page.containimg{", css)
-        for token in ("width:100%", "height:60%", "top:20%", "object-fit:cover", "object-position:center"):
+        self.assertIn(".art-page.photo-frameimg{", css)
+        for token in ("width:100%", "height:72%", "top:0", "object-fit:cover", "object-position:center"):
             self.assertIn(token, css)
+        self.assertIn("height:28%", css)
 
     def test_year_statistics_have_a_bounded_compact_layout(self):
         css = (FEATURE_CSS + THEME_CSS).replace(" ", "")

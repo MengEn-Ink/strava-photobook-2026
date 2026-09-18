@@ -30,6 +30,16 @@ class BookRenderingTests(unittest.TestCase):
         self.assertNotIn("照片与骑行故事完整", rendered)
         self.assertNotIn("photo-kicker", rendered)
         self.assertNotIn('class="folio"', rendered)
+        self.assertIn('class="photo-frame"', rendered)
+        self.assertIn('data-photo-orientation="portrait"', rendered)
+
+    def test_landscape_and_portrait_photos_share_the_same_frame(self):
+        portrait = _activity_photo_page("recto", self.highlight, Photo("portrait.jpg"), "1")
+        landscape = _activity_photo_page("verso", self.highlight, Photo("landscape.jpg", landscape=True), "2")
+        self.assertIn('class="photo-frame"', portrait)
+        self.assertIn('class="photo-frame"', landscape)
+        self.assertIn('data-photo-orientation="portrait"', portrait)
+        self.assertIn('data-photo-orientation="landscape"', landscape)
 
     def test_selected_activity_blocks_are_sorted_by_date(self):
         january = Highlight(

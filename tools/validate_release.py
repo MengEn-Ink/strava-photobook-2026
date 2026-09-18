@@ -45,14 +45,14 @@ def validate_release(
             continue
         if not (book / source).is_file():
             errors.append(f"missing asset: {source}")
-    photos = sum(source.startswith("assets/photos/") and "athlete" not in source for source in images)
+    photos = len({source for source in images if source.startswith("assets/photos/") and "athlete" not in source})
     baseline_photos = 0
     if baseline and (Path(baseline) / "index.html").is_file():
         _, old_images = _inspect(Path(baseline))
-        baseline_photos = sum(
-            source.startswith("assets/photos/") and "athlete" not in source
-            for source in old_images
-        )
+        baseline_photos = len({
+            source for source in old_images
+            if source.startswith("assets/photos/") and "athlete" not in source
+        })
         if baseline_photos and photos < min(baseline_photos, 40):
             errors.append(f"photo count regressed: {photos} < {min(baseline_photos, 40)}")
     if errors:

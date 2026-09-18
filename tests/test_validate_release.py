@@ -43,6 +43,11 @@ class ReleaseValidationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValidationError, "photo count regressed"):
                 validate_release(candidate, baseline)
 
+    def test_reused_cover_photo_counts_once(self):
+        with tempfile.TemporaryDirectory() as raw:
+            candidate = write_book(Path(raw), 2, extras='<img src="assets/photos/0.jpg">')
+            self.assertEqual(validate_release(candidate)["photos"], 2)
+
     def test_rejects_blank_folio_and_missing_asset(self):
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)

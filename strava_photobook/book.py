@@ -155,12 +155,13 @@ def _activity_photo_page(side: str, highlight: Highlight, ph, folio: str) -> str
     cap = (f'<figcaption class="bleed-cap"><strong>{_esc(_short(a.name, 64))}</strong>'
            f'<span>{_esc(a.date_label)} · {a.distance_km:.0f} km · 爬升 {a.elev_m:.0f} m</span>'
            f'{original}</figcaption>')
-    mode = "contain" if ph.landscape else "full-bleed"
+    orientation = "landscape" if ph.landscape else "portrait"
     month = int(a.month_label.removesuffix("月")) if a.month_label else 0
     return (f'<article class="book-page art-page bleed {side}" data-activity-id="{_esc(a.id)}" '
             f'data-month="{month}" '
             f'aria-label="{_esc(_short(a.name, 40))} photo">'
-            f'<figure class="{mode}"><img src="{ph.web_path}" alt="{_esc(ph.caption) or "ride photo"}">{cap}</figure>'
+            f'<figure class="photo-frame" data-photo-orientation="{orientation}">'
+            f'<img src="{ph.web_path}" alt="{_esc(ph.caption) or "ride photo"}">{cap}</figure>'
             f'</article>')
 
 
