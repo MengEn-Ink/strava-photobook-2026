@@ -17,6 +17,15 @@ class BeginnerDocsTests(unittest.TestCase):
         for phrase in ("19 种主题", "黑白橙", "自动保存", "strava-photobook.theme"):
             self.assertIn(phrase, setup + readme)
 
+    def test_docs_explain_nightly_github_actions_setup(self):
+        text = Path("README.md").read_text("utf-8") + Path("docs/setup.md").read_text("utf-8")
+        for phrase in (
+            "每天 21:00", "nightly-photobook.yml", "STRAVA_CLIENT_ID",
+            "STRAVA_CLIENT_SECRET", "STRAVA_REFRESH_TOKEN", "SECRETS_ADMIN_TOKEN",
+            "workflow_dispatch",
+        ):
+            self.assertIn(phrase, text)
+
 
 if __name__ == "__main__":
     unittest.main()

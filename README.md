@@ -153,6 +153,24 @@ cd books/<年份> && node --test html-contract.test.mjs
 文字再长也不会和轨迹图案堆积遮挡。需要逐页像素级核对时，可本地起服务后在浏览器对每个
 高光页测元素矩形碰撞（`?page=N`）。
 
+## 每晚自动更新
+
+仓库内的 `.github/workflows/nightly-photobook.yml` 每天北京时间 **21:00** 自动拉取
+Strava 最新活动、重建当年画册并更新 GitHub Pages；也支持在 Actions 页面通过
+`workflow_dispatch` 手动运行。GitHub 的 cron 使用 UTC，因此配置为 `0 13 * * *`。
+
+首次启用时，在 GitHub 仓库的 **Settings → Secrets and variables → Actions** 创建：
+
+- `STRAVA_CLIENT_ID`：Strava 应用 Client ID
+- `STRAVA_CLIENT_SECRET`：Strava 应用 Client Secret
+- `STRAVA_REFRESH_TOKEN`：执行本地 `auth` 后 `.env` 中的刷新令牌
+- `SECRETS_ADMIN_TOKEN`：能管理本仓库 Actions Secrets 并推送分支的 GitHub token
+
+工作流会先恢复当前线上照片作为本地缓存，再拉取和构建；若新画册照片数低于线上版本、
+存在空白衬页、缺失资源或内部页码，发布会停止，旧页面保持不变。Strava 刷新令牌发生
+轮换时会立即回写 `STRAVA_REFRESH_TOKEN`。需要暂停时，在 Actions 中禁用
+**Nightly photobook refresh** 工作流即可。
+
 ## 隐私
 
 全程在本机运行。照片、活动数据、凭证都不会离开你的电脑。`.env`、`data/`、`books/`

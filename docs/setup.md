@@ -33,6 +33,24 @@
 
 公开页面包含照片、活动标题、日期、路线与统计。执行前请确认允许公开。以后重新生成后运行同一条 publish 命令即可更新。
 
+## 7. 配置每天 21:00 自动更新
+
+代码仓库包含 `.github/workflows/nightly-photobook.yml`。它在每天北京时间 21:00
+（UTC 13:00）运行，也可从 GitHub 仓库 **Actions → Nightly photobook refresh →
+Run workflow** 手动触发（对应 `workflow_dispatch`）。
+
+打开仓库 **Settings → Secrets and variables → Actions → New repository secret**，依次添加：
+
+1. `STRAVA_CLIENT_ID`：复制本地 `.env` 的同名值。
+2. `STRAVA_CLIENT_SECRET`：复制本地 `.env` 的同名值。
+3. `STRAVA_REFRESH_TOKEN`：复制本地 `.env` 的同名值；工作流之后会自动维护轮换值。
+4. `SECRETS_ADMIN_TOKEN`：GitHub token，需要能管理本仓库 Actions Secrets 和推送分支。
+
+配置后先手动运行一次。在运行日志中看到 `release valid`、提交 `gh-pages` 成功，并能
+打开 Pages 地址即完成。失败时旧网站不会被覆盖：先打开失败步骤查看日志；凭证错误时重新
+执行本地 `python3 -m strava_photobook auth`，再更新上述 Strava Secrets。暂停自动更新时，
+进入该工作流右上角菜单选择 **Disable workflow**。
+
 ## 常见问题
 
 - 没有活动缓存：先运行 fetch。

@@ -1,0 +1,102 @@
+name: Nightly photobook refresh
+
+on:
+  schedule:
+    # GitHub cron uses UTC: 13:00 UTC = 21:00 Asia/Shanghai.
+    - cron: '0 13 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly-photobook-refresh
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
+      STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+      STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
+      SECRETS_ADMIN_TOKEN: ${{ secrets.SECRETS_ADMIN_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check required secrets
+        run: |
+          test -n "$STRAVA_CLIENT_ID"
+          test -n "$STRAVA_CLIENT_SECRET"
+          test -n "$STRAVA_REFRESH_TOKEN"
+          test -n "$SECRETS_ADMIN_TOKEN"
+
+      - name: Restore public photo baseline
+        run: |
+          previous_root="$(mktemp -d)"
+          previous_dir="$previous_root/site"
+          echo "PREVIOUS_BOOK=$previous_dir" >> "$GITHUB_ENV"
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            git worktree add --detach "$previous_dir" origin/gh-pages
+            mkdir -p data/photo-cache
+            if test -d "$previous_dir/assets/photos"; then
+              find "$previous_dir/assets/photos" -type f -name '*.jpg' ! -name 'athlete.jpg' -exec cp {} data/photo-cache/ \;
+            fi
+          fi
+
+      - name: Fetch current Strava activities
+        run: python -m strava_photobook fetch
+
+      - name: Persist rotated Strava refresh token
+        env:
+          GH_TOKEN: ${{ secrets.SECRETS_ADMIN_TOKEN }}
+        run: |
+          python -c 'import json; print(json.load(open("data/.strava_token.json"))["refresh_token"])' \
+            | gh secret set STRAVA_REFRESH_TOKEN --repo "$GITHUB_REPOSITORY"
+
+      - name: Build current-year photobook
+        run: |
+          book_year="$(TZ=Asia/Shanghai date +%Y)"
+          echo "BOOK_YEAR=$book_year" >> "$GITHUB_ENV"
+          python -m strava_photobook build "$book_year"
+
+      - name: Test and validate before publishing
+        run: |
+          python -m unittest discover -v
+          node --test runtime/*.test.mjs
+          node --test "books/$BOOK_YEAR/html-contract.test.mjs"
+          python -m tools.layout_gate
+          python tools/validate_release.py "books/$BOOK_YEAR" --baseline "$PREVIOUS_BOOK"
+
+      - name: Publish gh-pages atomically
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          publish_root="$(mktemp -d)"
+          publish_dir="$publish_root/site"
+          git worktree add --detach "$publish_dir" origin/gh-pages
+          find "$publish_dir" -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -R "books/$BOOK_YEAR/." "$publish_dir/"
+          cd "$publish_dir"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git remote set-url origin "https://x-access-token:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
+          git add --all
+          if git diff --cached --quiet; then
+            echo "No public changes"
+          else
+            git commit -m "Publish nightly Strava photobook"
+            git push origin HEAD:refs/heads/gh-pages
+          fi

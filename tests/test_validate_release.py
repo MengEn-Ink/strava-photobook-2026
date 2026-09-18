@@ -1,0 +1,57 @@
+import tempfile
+import unittest
+from pathlib import Path
+
+from tools.validate_release import ValidationError, validate_release
+
+
+def write_book(root: Path, photo_count: int, *, extras: str = "") -> Path:
+    book = root / "book"
+    photos = book / "assets" / "photos"
+    photos.mkdir(parents=True)
+    tags = []
+    for index in range(photo_count):
+        name = f"{index}.jpg"
+        (photos / name).write_bytes(b"jpg")
+        tags.append(f'<img src="assets/photos/{name}">')
+    (book / "index.html").write_text(
+        '<html data-strava-photobook="1"><nav id="month-timeline"></nav>'
+        + "".join(tags) + extras + "</html>",
+        encoding="utf-8",
+    )
+    return book
+
+
+class ReleaseValidationTests(unittest.TestCase):
+    def test_accepts_complete_book_at_baseline_photo_count(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            baseline = write_book(root / "old", 2)
+            candidate = write_book(root / "new", 2)
+            result = validate_release(candidate, baseline)
+            self.assertEqual(result["photos"], 2)
+
+    def test_rejects_photo_regression(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            baseline = write_book(root / "old", 2)
+            candidate = write_book(root / "new", 1)
+            with self.assertRaisesRegex(ValidationError, "photo count regressed"):
+                validate_release(candidate, baseline)
+
+    def test_rejects_blank_folio_and_missing_asset(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            candidate = write_book(
+                root, 1, extras='<article class="endpaper"></article><p class="folio"></p><img src="missing.jpg">',
+            )
+            with self.assertRaises(ValidationError) as caught:
+                validate_release(candidate)
+            message = str(caught.exception)
+            self.assertIn("blank endpaper", message)
+            self.assertIn("internal folio", message)
+            self.assertIn("missing asset", message)
+
+
+if __name__ == "__main__":
+    unittest.main()
