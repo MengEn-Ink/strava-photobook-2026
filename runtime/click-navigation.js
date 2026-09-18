@@ -11,3 +11,9 @@ export function tapDirection(start, end, bounds, threshold = 12) {
   if (!start || !end || Math.hypot(end.x - start.x, end.y - start.y) > threshold) return null;
   return clickDirection(end.x, bounds);
 }
+
+export function tapAction({ popoverOpen, start, end, bounds, interactive = false }) {
+  if (popoverOpen) return "close-popover";
+  if (interactive) return null;
+  return tapDirection(start, end, bounds);
+}

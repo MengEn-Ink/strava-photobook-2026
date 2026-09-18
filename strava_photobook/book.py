@@ -279,12 +279,9 @@ def _document(year: str, body: str) -> str:
 </head>
 <body>
 <main class="room">
-  <header class="book-header">
-    <span>Strava · Cycling</span><h1>Strava Photobook {year}</h1>
-    <div class="header-tools"><span id="orientation">Open spread</span>{_theme_picker()}</div>
-  </header>
   <section class="stage" aria-label="Interactive photo book">
     <div class="book-rig">
+      <div class="book-theme-overlay" data-no-page-click>{_theme_picker()}</div>
       <div id="book" class="book" data-page-width="{PAGE_W}" data-page-height="{PAGE_H}">
         {body}
       </div>
@@ -293,7 +290,7 @@ def _document(year: str, body: str) -> str:
   <footer class="controls" aria-label="Book controls">
     <button id="previous" type="button" aria-label="Previous page">←</button>
     <div class="control-center">{_month_timeline(body)}
-      <div class="status" aria-live="polite"><span id="page-status">Cover</span><small>拖动或方向键翻页</small></div>
+      <div class="status" aria-live="polite"><span id="page-status">Cover</span><small>点击左右、拖动或方向键翻页</small></div>
     </div>
     <button id="next" type="button" aria-label="Next page">→</button>
   </footer>

@@ -163,6 +163,9 @@ class BookRenderingTests(unittest.TestCase):
         self.assertIn('data-month="8" aria-label="跳到 8 月"', rendered)
         self.assertIn('id="month-timeline"', rendered)
         self.assertIn('month-timeline.js', rendered)
+        self.assertNotIn('class="book-header"', rendered)
+        self.assertIn('class="book-theme-overlay"', rendered)
+        self.assertLess(rendered.index('class="book-theme-overlay"'), rendered.index('id="book"'))
 
 
 if __name__ == "__main__":
